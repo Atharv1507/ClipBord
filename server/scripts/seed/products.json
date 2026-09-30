@@ -1,0 +1,274 @@
+[
+  {
+    "slug": "adhd-oversized-tee",
+    "name": "ADHD Oversized Tee",
+    "price": 899,
+    "category": "Tshirt",
+    "desc": "Our signature drop-shoulder tee in 240 GSM combed cotton, with the ADHD mark screen-printed across the chest. Cut boxy and long, so size down for a regular fit.",
+    "sizes": { "S": 14, "M": 22, "L": 18, "XL": 9 },
+    "art": { "kind": "tee", "color": "#1c1c1c", "fit": "oversized", "print": { "type": "text", "text": "ADHD", "color": "#f3efe6" } }
+  },
+  {
+    "slug": "margin-notes-boxy-tee",
+    "name": "Margin Notes Boxy Tee",
+    "price": 649,
+    "category": "Tshirt",
+    "desc": "A soft, slightly cropped boxy tee in washed lilac. Pre-shrunk 200 GSM cotton that keeps its shape wash after wash.",
+    "sizes": { "S": 16, "M": 20, "L": 11, "XL": 4 },
+    "art": { "kind": "tee", "color": "#b9a6d6", "fit": "boxy", "print": { "type": "chest", "text": "margin notes", "color": "#3d2f57" } }
+  },
+  {
+    "slug": "paper-cut-heavyweight-tee",
+    "name": "Paper Cut Heavyweight Tee",
+    "price": 1199,
+    "category": "Tshirt",
+    "desc": "Built for everyday wear: 280 GSM heavyweight cotton jersey, a thick ribbed collar and double-needle hems. Olive with a tonal chest print.",
+    "sizes": { "S": 6, "M": 15, "L": 17, "XL": 12 },
+    "art": { "kind": "tee", "color": "#5f6b3a", "fit": "regular", "print": { "type": "chest", "text": "PAPER CUT", "color": "#d9d2b8" } }
+  },
+  {
+    "slug": "scribble-pocket-tee",
+    "name": "Scribble Pocket Tee",
+    "price": 449,
+    "category": "Tshirt",
+    "desc": "The easy navy tee with a patch pocket on the chest. Lightweight 180 GSM cotton for hot days.",
+    "sizes": { "S": 20, "M": 28, "L": 24, "XL": 15 },
+    "art": { "kind": "tee", "color": "#1f2a4a", "fit": "regular", "print": { "type": "pocket" } }
+  },
+  {
+    "slug": "draft-one-crop-tee",
+    "name": "Draft One Crop Tee",
+    "price": 399,
+    "category": "Tshirt",
+    "desc": "A fitted crop tee in crimson stretch cotton, cut to sit just above the waist. Pairs with high-rise everything.",
+    "sizes": { "S": 18, "M": 14, "L": 7, "XL": 0 },
+    "art": { "kind": "tee", "color": "#b3122e", "fit": "crop", "print": null }
+  },
+  {
+    "slug": "highlighter-tee",
+    "name": "Highlighter Tee",
+    "price": 549,
+    "category": "Tshirt",
+    "desc": "Loud on purpose. A bright highlighter-yellow tee in 200 GSM cotton with a relaxed, straight fit.",
+    "sizes": { "S": 10, "M": 16, "L": 16, "XL": 8 },
+    "art": { "kind": "tee", "color": "#e8c93a", "fit": "regular", "print": { "type": "text", "text": "HIGHLIGHT", "color": "#1c1c1c" } }
+  },
+  {
+    "slug": "staple-everyday-tee",
+    "name": "Staple Everyday Tee",
+    "price": 349,
+    "category": "Tshirt",
+    "desc": "The plain grey-marl tee you'll reach for most. Breathable 180 GSM cotton-poly blend, true to size.",
+    "sizes": { "S": 30, "M": 40, "L": 36, "XL": 22 },
+    "art": { "kind": "tee", "color": "#9a9a98", "fit": "regular", "marl": true, "print": null }
+  },
+  {
+    "slug": "ruled-stripe-tee",
+    "name": "Ruled Stripe Tee",
+    "price": 749,
+    "category": "Tshirt",
+    "desc": "Notebook-ruled navy stripes on an off-white, regular-fit tee. Yarn-dyed, so the stripes never fade.",
+    "sizes": { "S": 12, "M": 15, "L": 9, "XL": 3 },
+    "art": { "kind": "tee", "color": "#f7f5ef", "fit": "regular", "outline": true, "print": { "type": "stripes", "color": "#2a3a6b" } }
+  },
+  {
+    "slug": "ink-blot-graphic-tee",
+    "name": "Ink Blot Graphic Tee",
+    "price": 999,
+    "category": "Tshirt",
+    "desc": "A white oversized tee with a hand-drawn ink blot printed front and centre. Puff-print ink gives it a raised feel.",
+    "sizes": { "S": 8, "M": 13, "L": 13, "XL": 6 },
+    "art": { "kind": "tee", "color": "#f7f5ef", "fit": "oversized", "outline": true, "print": { "type": "blot", "color": "#161616" } }
+  },
+  {
+    "slug": "carbon-copy-longline-tee",
+    "name": "Carbon Copy Longline Tee",
+    "price": 1299,
+    "category": "Tshirt",
+    "desc": "A longline tee in charcoal with a curved hem and dropped shoulders. 240 GSM cotton with a garment-dyed finish.",
+    "sizes": { "S": 0, "M": 9, "L": 12, "XL": 10 },
+    "art": { "kind": "tee", "color": "#3a3a3c", "fit": "longline", "print": { "type": "chest", "text": "CARBON COPY", "color": "#bdbdbd" } }
+  },
+
+  {
+    "slug": "clipboard-crest-crewneck",
+    "name": "Clipboard Crest Crewneck",
+    "price": 2199,
+    "category": "Sweat Shirt",
+    "desc": "Forest-green 400 GSM brushed fleece with the Clipboard crest embroidered on the chest. Ribbed cuffs, collar and hem.",
+    "sizes": { "S": 7, "M": 12, "L": 12, "XL": 6 },
+    "art": { "kind": "sweat", "color": "#2f5a43", "fit": "regular", "print": { "type": "text", "text": "CLIPBOARD", "color": "#f3efe6" } }
+  },
+  {
+    "slug": "late-shift-sweatshirt",
+    "name": "Late Shift Sweatshirt",
+    "price": 1799,
+    "category": "Sweat Shirt",
+    "desc": "A charcoal crewneck for long nights. Mid-weight loopback cotton that works indoors and out.",
+    "sizes": { "S": 5, "M": 14, "L": 16, "XL": 11 },
+    "art": { "kind": "sweat", "color": "#3a3a3c", "fit": "regular", "print": { "type": "chest", "text": "LATE SHIFT", "color": "#c9c9c9" } }
+  },
+  {
+    "slug": "soft-focus-cropped-sweatshirt",
+    "name": "Soft Focus Cropped Sweatshirt",
+    "price": 1599,
+    "category": "Sweat Shirt",
+    "desc": "A cropped, sky-blue sweatshirt with balloon sleeves and a wide ribbed hem. Brushed inside for extra softness.",
+    "sizes": { "S": 11, "M": 13, "L": 8, "XL": 2 },
+    "art": { "kind": "sweat", "color": "#8fb3d9", "fit": "crop", "print": null }
+  },
+  {
+    "slug": "pencil-shavings-crewneck",
+    "name": "Pencil Shavings Crewneck",
+    "price": 1899,
+    "category": "Sweat Shirt",
+    "desc": "A warm rust crewneck in 380 GSM fleece with a relaxed, dropped-shoulder fit. Named for the colour, not the mess.",
+    "sizes": { "S": 6, "M": 10, "L": 11, "XL": 7 },
+    "art": { "kind": "sweat", "color": "#a4522c", "fit": "oversized", "print": { "type": "chest", "text": "shavings", "color": "#f0dcc8" } }
+  },
+  {
+    "slug": "rough-draft-raglan-sweatshirt",
+    "name": "Rough Draft Raglan Sweatshirt",
+    "price": 1499,
+    "category": "Sweat Shirt",
+    "desc": "A classic two-tone raglan: grey-marl body, navy sleeves. Mid-weight fleece and a slim, athletic cut.",
+    "sizes": { "S": 9, "M": 15, "L": 13, "XL": 8 },
+    "art": { "kind": "sweat", "color": "#9a9a98", "sleeveColor": "#1f2a4a", "marl": true, "fit": "regular", "print": null }
+  },
+  {
+    "slug": "folded-corner-sweatshirt",
+    "name": "Folded Corner Sweatshirt",
+    "price": 1399,
+    "category": "Sweat Shirt",
+    "desc": "A dusty-pink relaxed sweatshirt with a small folded-corner patch on the hip. Lightweight enough to layer.",
+    "sizes": { "S": 13, "M": 16, "L": 10, "XL": 4 },
+    "art": { "kind": "sweat", "color": "#d9a3a8", "fit": "regular", "print": { "type": "patch", "color": "#f3efe6" } }
+  },
+  {
+    "slug": "night-edition-crewneck",
+    "name": "Night Edition Crewneck",
+    "price": 2499,
+    "category": "Sweat Shirt",
+    "desc": "Jet-black 420 GSM heavyweight fleece with a crimson ADHD mark on the back neck and chest. Limited run.",
+    "sizes": { "S": 4, "M": 8, "L": 8, "XL": 5 },
+    "art": { "kind": "sweat", "color": "#161616", "fit": "oversized", "print": { "type": "text", "text": "ADHD", "color": "#e0475c" } }
+  },
+  {
+    "slug": "sticky-note-sweatshirt",
+    "name": "Sticky Note Sweatshirt",
+    "price": 999,
+    "category": "Sweat Shirt",
+    "desc": "A mustard-yellow lightweight sweatshirt in French terry. Easy to throw on, easy to spot.",
+    "sizes": { "S": 15, "M": 18, "L": 12, "XL": 0 },
+    "art": { "kind": "sweat", "color": "#d6a933", "fit": "regular", "print": { "type": "patch", "color": "#fff3a8" } }
+  },
+  {
+    "slug": "heavy-stock-crewneck",
+    "name": "Heavy Stock Crewneck",
+    "price": 2799,
+    "category": "Sweat Shirt",
+    "desc": "Our heaviest crewneck: 480 GSM navy fleece, double-layer collar and flat-lock seams. Built to last a decade.",
+    "sizes": { "S": 3, "M": 9, "L": 11, "XL": 9 },
+    "art": { "kind": "sweat", "color": "#1f2a4a", "fit": "regular", "print": { "type": "chest", "text": "HEAVY STOCK", "color": "#c5cde3" } }
+  },
+  {
+    "slug": "blueprint-sweatshirt",
+    "name": "Blueprint Sweatshirt",
+    "price": 1699,
+    "category": "Sweat Shirt",
+    "desc": "A cobalt-blue sweatshirt with a fine white grid printed across the front, like drafting paper.",
+    "sizes": { "S": 8, "M": 12, "L": 12, "XL": 7 },
+    "art": { "kind": "sweat", "color": "#2b55b8", "fit": "regular", "print": { "type": "grid", "color": "#dfe7fb" } }
+  },
+
+  {
+    "slug": "everyday-fleece-joggers",
+    "name": "Everyday Fleece Joggers",
+    "price": 1299,
+    "category": "Joggers",
+    "desc": "Grey-marl fleece joggers with a tapered leg, ribbed cuffs and a drawstring waist. The daily default.",
+    "sizes": { "S": 18, "M": 24, "L": 22, "XL": 14 },
+    "art": { "kind": "jogger", "color": "#9a9a98", "marl": true, "fit": "tapered" }
+  },
+  {
+    "slug": "commute-tapered-joggers",
+    "name": "Commute Tapered Joggers",
+    "price": 1599,
+    "category": "Joggers",
+    "desc": "Smart-enough black joggers in a stretch cotton twill, with a slim taper and zip back pocket.",
+    "sizes": { "S": 7, "M": 15, "L": 16, "XL": 10 },
+    "art": { "kind": "jogger", "color": "#1c1c1c", "fit": "tapered" }
+  },
+  {
+    "slug": "lounge-wide-leg-joggers",
+    "name": "Lounge Wide-Leg Joggers",
+    "price": 1199,
+    "category": "Joggers",
+    "desc": "Relaxed wide-leg joggers in taupe French terry, with an elastic waist and open hems.",
+    "sizes": { "S": 12, "M": 14, "L": 9, "XL": 5 },
+    "art": { "kind": "jogger", "color": "#8a7866", "fit": "wide" }
+  },
+  {
+    "slug": "track-stripe-joggers",
+    "name": "Track Stripe Joggers",
+    "price": 1899,
+    "category": "Joggers",
+    "desc": "Navy track joggers with a white side stripe down each leg. Quick-dry poly-knit with zip ankle cuffs.",
+    "sizes": { "S": 6, "M": 13, "L": 14, "XL": 9 },
+    "art": { "kind": "jogger", "color": "#1f2a4a", "fit": "tapered", "stripe": "#f3efe6" }
+  },
+  {
+    "slug": "cloud-rib-joggers",
+    "name": "Cloud Rib Joggers",
+    "price": 949,
+    "category": "Joggers",
+    "desc": "Soft ribbed-knit joggers in lilac, cut close through the leg with a high-rise waistband.",
+    "sizes": { "S": 14, "M": 16, "L": 8, "XL": 0 },
+    "art": { "kind": "jogger", "color": "#b9a6d6", "fit": "tapered", "rib": true }
+  },
+  {
+    "slug": "cargo-pocket-joggers",
+    "name": "Cargo Pocket Joggers",
+    "price": 2299,
+    "category": "Joggers",
+    "desc": "Olive cargo joggers in heavy cotton ripstop with bellowed thigh pockets and adjustable cuffs.",
+    "sizes": { "S": 4, "M": 10, "L": 12, "XL": 8 },
+    "art": { "kind": "jogger", "color": "#5f6b3a", "fit": "tapered", "cargo": true }
+  },
+  {
+    "slug": "sunday-slouch-joggers",
+    "name": "Sunday Slouch Joggers",
+    "price": 799,
+    "category": "Joggers",
+    "desc": "Charcoal joggers with a slouchy, relaxed fit for doing nothing in particular. Lightweight loopback cotton.",
+    "sizes": { "S": 16, "M": 20, "L": 18, "XL": 12 },
+    "art": { "kind": "jogger", "color": "#3a3a3c", "fit": "relaxed" }
+  },
+  {
+    "slug": "night-run-joggers",
+    "name": "Night Run Joggers",
+    "price": 1399,
+    "category": "Joggers",
+    "desc": "Black running joggers with a reflective stripe at the ankle, a phone pocket and a slim fit.",
+    "sizes": { "S": 10, "M": 12, "L": 7, "XL": 3 },
+    "art": { "kind": "jogger", "color": "#161616", "fit": "tapered", "stripe": "#b3122e" }
+  },
+  {
+    "slug": "terry-loop-joggers",
+    "name": "Terry Loop Joggers",
+    "price": 2099,
+    "category": "Joggers",
+    "desc": "Forest-green 400 GSM loopback terry joggers with a relaxed taper and a flat drawcord.",
+    "sizes": { "S": 5, "M": 11, "L": 11, "XL": 6 },
+    "art": { "kind": "jogger", "color": "#2f5a43", "fit": "relaxed" }
+  },
+  {
+    "slug": "classic-cuffed-joggers",
+    "name": "Classic Cuffed Joggers",
+    "price": 699,
+    "category": "Joggers",
+    "desc": "Crimson cuffed joggers in lightweight fleece. A bold colour in the most familiar shape.",
+    "sizes": { "S": 12, "M": 18, "L": 15, "XL": 9 },
+    "art": { "kind": "jogger", "color": "#b3122e", "fit": "tapered" }
+  }
+]

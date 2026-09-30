@@ -1,0 +1,160 @@
+diff -ru ./src/components/ProductCard.jsx /Users/atharv/Locals/ShopKart/client/src/components/ProductCard.jsx
+--- ./src/components/ProductCard.jsx	2026-09-29 21:37:03
++++ /Users/atharv/Locals/ShopKart/client/src/components/ProductCard.jsx	2026-09-29 21:40:12
+@@ -6,7 +6,7 @@
+ 
+ function HeartIcon() {
+   return (
+-    <svg viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-5 w-5 fill-none stroke-current transition-transform duration-200 group-aria-pressed/heart:scale-110 group-aria-pressed/heart:fill-crimson group-aria-pressed/heart:stroke-crimson">
++    <svg viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-5 w-5 fill-none stroke-current transition-transform duration-200 group-aria-pressed/heart:scale-110 group-aria-pressed/heart:fill-crimson-bright group-aria-pressed/heart:stroke-crimson-bright">
+       <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" />
+     </svg>
+   )
+@@ -20,13 +20,15 @@
+   )
+ }
+ 
+-const labelClass = 'block text-[10.5px] uppercase tracking-[0.14em] text-ink-mute'
+-// The tag's outline: the top corners cut off either side of the eyelet.
++// The tag's outline: the top corners cut off either side of the eyelet. The crimson layer
++// is cut to this shape and the black face sits 1.5px inside it, so a crimson foil line
++// traces the edge. The face's corners move in a touch so the line keeps its width on the diagonals.
+ const tagShape = '[clip-path:polygon(22%_0,78%_0,100%_44px,100%_100%,0_100%,0_44px)]'
++const faceShape = '[clip-path:polygon(calc(22%_+_0.6px)_0,calc(78%_-_0.6px)_0,100%_44.4px,100%_100%,0_100%,0_44.4px)]'
+ 
+-// A product as the swing tag on a new garment, hung from the rail by a crimson loop:
+-// eyelet, photo, tear-off line, then the style name and MRP. Hovering swings it on its
+-// string. "View" opens the product page and the heart saves it to the wishlist.
++// A product as a black swing tag edged in crimson foil, hung from the rail by a crimson
++// loop: the CB monogram and category, the photo, then the style name and price. Hovering
++// swings it on its string. "View" opens the product page and the heart saves it to the wishlist.
+ function ProductCard({ product }) {
+   const { _id, name, price, image, category } = product
+   const { areaRef, swingRef } = useSwing()
+@@ -36,68 +38,63 @@
+ 
+   return (
+     <article ref={areaRef} className="group relative mx-auto max-w-sm select-none">
+-      <div ref={swingRef} className="relative origin-top pt-10 drop-shadow-[0_18px_28px_rgb(0_0_0/0.55)] will-change-transform">
++      <div ref={swingRef} className="relative origin-top pt-10 will-change-transform">
+         {/* The loop over the rail, running down through the eyelet. */}
+         <svg viewBox="0 0 20 62" aria-hidden="true" className="absolute left-1/2 top-0 z-10 h-[62px] w-5 -translate-x-1/2 overflow-visible">
+           <path d="M8 62 L7.2 7 Q10 -2.2 12.8 7 L12 62" fill="none" stroke="var(--color-crimson)" strokeWidth="1.75" strokeLinecap="round" />
+         </svg>
+ 
+-        <div className={`relative rounded-b-2xl bg-paper px-3.5 pb-4 pt-10 text-ink ${tagShape}`}>
+-          <span aria-hidden="true" className="absolute left-1/2 top-3.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-ink ring-4 ring-paper-dim" />
++        <div className={`rounded-b-2xl bg-crimson p-[1.5px] ${tagShape}`}>
++          <div className={`relative rounded-b-[15px] bg-smoke px-4 pb-[18px] pt-10 text-paper ${faceShape}`}>
++            {/* The eyelet, ringed by a crimson grommet. */}
++            <span aria-hidden="true" className="absolute left-1/2 top-3.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-ink shadow-[0_0_0_3px_var(--color-crimson),0_0_0_5px_var(--color-smoke),0_0_0_6px_rgb(179_18_46/0.45)]" />
+ 
+-          <div className="flex items-center justify-between gap-3">
+-            <Monogram className="h-9" />
+-            {category && (
+-              <span className="text-[11px] uppercase tracking-[0.16em] text-ink-mute">{CATEGORY_LABELS[category] ?? category}</span>
+-            )}
+-          </div>
++            <div className="flex items-center justify-between gap-3">
++              <Monogram className="h-9" />
++              {category && (
++                <span className="text-[13px] text-mute">{CATEGORY_LABELS[category] ?? category}</span>
++              )}
++            </div>
+ 
+-          {/* The name and View link carry the product page for keyboards and screen readers. */}
+-          <Link to={href} tabIndex={-1} aria-hidden="true" className="relative mt-2.5 block aspect-[1/0.9] overflow-hidden rounded-[10px] bg-paper-dim">
+-            {/* The catalog photos (4:5) print the product name along the bottom. This window
+-                shows the band from 10% to 82% of the photo: the whole garment, not the name. */}
+-            <img
+-              src={image}
+-              alt=""
+-              loading="lazy"
+-              draggable="false"
+-              className="absolute inset-x-0 -top-[14%] aspect-[4/5] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+-            />
+-          </Link>
++            {/* The name and View link carry the product page for keyboards and screen readers. */}
++            <Link to={href} tabIndex={-1} aria-hidden="true" className="relative mt-3 block aspect-[1/0.9] overflow-hidden rounded-lg bg-paper-dim">
++              {/* The catalog photos (4:5) print the product name along the bottom. This window
++                  shows the band from 10% to 82% of the photo: the whole garment, not the name. */}
++              <img
++                src={image}
++                alt=""
++                loading="lazy"
++                draggable="false"
++                className="absolute inset-x-0 -top-[14%] aspect-[4/5] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
++              />
++            </Link>
+ 
+-          {/* Tear-off line; the ink circles at each end read as notches cut into the tag. */}
+-          <div aria-hidden="true" className="relative -mx-3.5 my-4 border-t-2 border-dashed border-ink/20 before:absolute before:-left-2.5 before:-top-[11px] before:h-5 before:w-5 before:rounded-full before:bg-ink after:absolute after:-right-2.5 after:-top-[11px] after:h-5 after:w-5 after:rounded-full after:bg-ink" />
++            <h3 className="mt-[18px] line-clamp-2 min-h-[2lh] font-display text-[26px] leading-[1.12] text-balance">{name}</h3>
+ 
+-          <span className={labelClass}>Style</span>
+-          <h3 className="mt-1 line-clamp-2 min-h-[2lh] font-display text-2xl leading-tight text-balance">{name}</h3>
+-
+-          <div className="mt-3 flex items-end justify-between gap-3">
+-            <div>
+-              <span className={labelClass}>MRP</span>
+-              <p className="text-2xl font-bold leading-tight tracking-[-0.02em] tabular-nums">{formatPrice(price)}</p>
+-              <p className="text-[11px] text-ink-mute">Incl. of all taxes</p>
++            <div className="mt-3.5 border-t border-paper/10 pt-3.5">
++              <p className="text-[26px] font-semibold leading-tight tracking-[-0.01em] text-crimson-bright tabular-nums">{formatPrice(price)}</p>
++              <p className="mt-0.5 text-xs text-mute">Incl. of all taxes</p>
+             </div>
+-            <p className="pb-0.5 font-mono text-[11px] tracking-[0.06em] text-ink-mute">No. {_id.slice(-6).toUpperCase()}</p>
+-          </div>
+ 
+-          <div className="mt-4 flex gap-2">
+-            <Link
+-              to={href}
+-              aria-label={`View ${name}`}
+-              className="group/view flex flex-1 items-center justify-between rounded-[10px] bg-crimson px-4 py-3 font-bold text-paper transition hover:brightness-110"
+-            >
+-              View
+-              <ArrowIcon />
+-            </Link>
+-            <button
+-              type="button"
+-              onClick={() => wishlist.toggle(_id)}
+-              aria-pressed={saved}
+-              aria-label={`Save ${name} to wishlist`}
+-              className="group/heart grid w-12 shrink-0 place-items-center rounded-[10px] text-ink ring-[1.5px] ring-ink/20 ring-inset transition-colors hover:bg-paper-dim"
+-            >
+-              <HeartIcon />
+-            </button>
++            <div className="mt-4 flex gap-2">
++              <Link
++                to={href}
++                aria-label={`View ${name}`}
++                className="group/view flex flex-1 items-center justify-between rounded-[10px] bg-crimson px-4 py-3 font-semibold text-paper transition hover:brightness-110"
++              >
++                View
++                <ArrowIcon />
++              </Link>
++              <button
++                type="button"
++                onClick={() => wishlist.toggle(_id)}
++                aria-pressed={saved}
++                aria-label={`Save ${name} to wishlist`}
++                className="group/heart grid w-12 shrink-0 place-items-center rounded-[10px] text-paper ring-[1.5px] ring-paper/20 ring-inset transition-colors hover:bg-paper/5"
++              >
++                <HeartIcon />
++              </button>
++            </div>
+           </div>
+         </div>
+       </div>
+diff -ru ./src/components/ProductRack.jsx /Users/atharv/Locals/ShopKart/client/src/components/ProductRack.jsx
+--- ./src/components/ProductRack.jsx	2026-09-29 21:37:03
++++ /Users/atharv/Locals/ShopKart/client/src/components/ProductRack.jsx	2026-09-29 21:40:51
+@@ -17,7 +17,7 @@
+         {Array.from({ length: placeholders }, (_, i) => (
+           <li key={i} className="relative">
+             <Rail />
+-            <div className="mx-auto mt-10 aspect-[1/1.6] max-w-sm rounded-b-2xl bg-raised [clip-path:polygon(22%_0,78%_0,100%_44px,100%_100%,0_100%,0_44px)] motion-safe:animate-pulse" />
++            <div className="mx-auto mt-10 aspect-[1/1.85] max-w-sm rounded-b-2xl bg-raised [clip-path:polygon(22%_0,78%_0,100%_44px,100%_100%,0_100%,0_44px)] motion-safe:animate-pulse" />
+           </li>
+         ))}
+       </ul>

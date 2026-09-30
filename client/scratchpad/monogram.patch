@@ -1,0 +1,44 @@
+diff -ru ./src/components/Footer.jsx /Users/atharv/Locals/ShopKart/client/src/components/Footer.jsx
+--- ./src/components/Footer.jsx	2026-09-29 21:32:55
++++ /Users/atharv/Locals/ShopKart/client/src/components/Footer.jsx	2026-09-29 21:33:04
+@@ -1,5 +1,6 @@
+ import { Link } from 'react-router-dom'
+ import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../utils/contact'
++import Monogram from './Monogram'
+ 
+ function InstagramIcon() {
+   return (
+@@ -64,7 +65,10 @@
+         </div>
+ 
+         <div className="mt-16 flex items-center justify-between gap-4 border-t border-paper/10 py-6 text-sm text-mute">
+-          <p>&copy; {new Date().getFullYear()} Clipboard</p>
++          <div className="flex items-center gap-4">
++            <Monogram label="" className="h-14 text-paper" />
++            <p>&copy; {new Date().getFullYear()} Clipboard</p>
++          </div>
+           <a href="#top" className="transition-colors hover:text-paper">Back to top</a>
+         </div>
+       </div>
+diff -ru ./src/components/ProductCard.jsx /Users/atharv/Locals/ShopKart/client/src/components/ProductCard.jsx
+--- ./src/components/ProductCard.jsx	2026-09-29 21:32:55
++++ /Users/atharv/Locals/ShopKart/client/src/components/ProductCard.jsx	2026-09-29 21:33:04
+@@ -2,6 +2,7 @@
+ import { useSwing } from '../hooks/useSwing'
+ import { useWishlist } from '../hooks/useWishlist'
+ import { CATEGORY_LABELS, formatPrice } from '../utils/product'
++import Monogram from './Monogram'
+ 
+ function HeartIcon() {
+   return (
+@@ -44,8 +45,8 @@
+         <div className={`relative rounded-b-2xl bg-paper px-3.5 pb-4 pt-10 text-ink ${tagShape}`}>
+           <span aria-hidden="true" className="absolute left-1/2 top-3.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-ink ring-4 ring-paper-dim" />
+ 
+-          <div className="flex items-baseline justify-between gap-3">
+-            <span className="font-display text-xl leading-none">Clipboard</span>
++          <div className="flex items-center justify-between gap-3">
++            <Monogram className="h-9" />
+             {category && (
+               <span className="text-[11px] uppercase tracking-[0.16em] text-ink-mute">{CATEGORY_LABELS[category] ?? category}</span>
+             )}

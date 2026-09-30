@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/* Clipbord design tokens. Every color and font in the app comes from here,
+   e.g. --color-crimson becomes bg-crimson / text-crimson. */
+@theme {
+  --color-ink: #000000;
+  --color-smoke: #111111; /* section bands, inputs */
+  --color-raised: #1a1a1a; /* image placeholders, avatar, toast */
+  --color-paper: #f3efe6; /* the cream from the logo */
+  --color-mute: #9a958c;
+  /* On paper (the hang tags): a darker cream for photo grounds, muted text. */
+  --color-paper-dim: #e6e0d3;
+  --color-ink-mute: #6e685e;
+  /* Fills (buttons, badges) carry paper text; use crimson-bright for red text on black. */
+  --color-crimson: #b3122e;
+  --color-crimson-bright: #e0475c;
+
+  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
+  /* Headlines, product names and the tag wordmark: a flared, high-contrast face that
+     echoes the logo. Forum has one weight, so pair font-display with font-normal, never bold.
+     It has no rupee sign, so prices stay in font-sans. */
+  --font-display: "Forum", ui-serif, Georgia, serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: var(--color-crimson);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-crimson-bright);
+    outline-offset: 3px;
+  }
+}
+
+/* The logo on the loading splash (ScrollVideo) rises out of a blur. */
+@keyframes splash-logo-in {
+  from { opacity: 0; filter: blur(10px); transform: translateY(14px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

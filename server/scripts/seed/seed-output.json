@@ -1,0 +1,182 @@
+[
+  {
+    "slug": "adhd-oversized-tee",
+    "id": "6abbbc65aeaf06dc8801fd16",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688356/clipBoard/product-images/psoppbnaoqagaf17x9do.png",
+    "status": "created"
+  },
+  {
+    "slug": "margin-notes-boxy-tee",
+    "id": "6abbbc66aeaf06dc8801fd17",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688358/clipBoard/product-images/cpi0ljalkjbpgxnhdv2b.png",
+    "status": "created"
+  },
+  {
+    "slug": "paper-cut-heavyweight-tee",
+    "id": "6abbbc67aeaf06dc8801fd18",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688359/clipBoard/product-images/wek9kbctbrwnkc69zfeo.png",
+    "status": "created"
+  },
+  {
+    "slug": "scribble-pocket-tee",
+    "id": "6abbbc68aeaf06dc8801fd19",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688360/clipBoard/product-images/nub0fbud8enswtlhlszn.png",
+    "status": "created"
+  },
+  {
+    "slug": "draft-one-crop-tee",
+    "id": "6abbbc69aeaf06dc8801fd1a",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688361/clipBoard/product-images/bsm4jeyi9ccwc1icrq5c.png",
+    "status": "created"
+  },
+  {
+    "slug": "highlighter-tee",
+    "id": "6abbbc6aaeaf06dc8801fd1b",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688362/clipBoard/product-images/c9fxag7yds3h5pwsujig.png",
+    "status": "created"
+  },
+  {
+    "slug": "staple-everyday-tee",
+    "id": "6abbbc6baeaf06dc8801fd1c",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688363/clipBoard/product-images/hb9w1kikhw91rfnwm7ce.png",
+    "status": "created"
+  },
+  {
+    "slug": "ruled-stripe-tee",
+    "id": "6abbbc6caeaf06dc8801fd1d",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688364/clipBoard/product-images/rnz9ydie4j8spo8lcasd.png",
+    "status": "created"
+  },
+  {
+    "slug": "ink-blot-graphic-tee",
+    "id": "6abbbc6daeaf06dc8801fd1e",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688365/clipBoard/product-images/wtf2cy5pb3uuymilutl0.png",
+    "status": "created"
+  },
+  {
+    "slug": "carbon-copy-longline-tee",
+    "id": "6abbbc6faeaf06dc8801fd1f",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688366/clipBoard/product-images/kfvtyyc0mt9wkqu32ilo.png",
+    "status": "created"
+  },
+  {
+    "slug": "clipboard-crest-crewneck",
+    "id": "6abbbc70aeaf06dc8801fd20",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688367/clipBoard/product-images/thq8c2plupxjf8cvwskk.png",
+    "status": "created"
+  },
+  {
+    "slug": "late-shift-sweatshirt",
+    "id": "6abbbc71aeaf06dc8801fd21",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688368/clipBoard/product-images/edhrg84mwitj0et37ka3.png",
+    "status": "created"
+  },
+  {
+    "slug": "soft-focus-cropped-sweatshirt",
+    "id": "6abbbc73aeaf06dc8801fd22",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688369/clipBoard/product-images/iilpy2g2sw70olvcifha.png",
+    "status": "created"
+  },
+  {
+    "slug": "pencil-shavings-crewneck",
+    "id": "6abbbc74aeaf06dc8801fd23",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688371/clipBoard/product-images/gkddmoks3tijmfnzkzgl.png",
+    "status": "created"
+  },
+  {
+    "slug": "rough-draft-raglan-sweatshirt",
+    "id": "6abbbc75aeaf06dc8801fd24",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688373/clipBoard/product-images/z7vv5srfzwlhdj6sva4w.png",
+    "status": "created"
+  },
+  {
+    "slug": "folded-corner-sweatshirt",
+    "id": "6abbbc76aeaf06dc8801fd25",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688374/clipBoard/product-images/pnb5svowwukadewyf3we.png",
+    "status": "created"
+  },
+  {
+    "slug": "night-edition-crewneck",
+    "id": "6abbbc77aeaf06dc8801fd26",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688375/clipBoard/product-images/wx8hl7zhvdjynuxzfppv.png",
+    "status": "created"
+  },
+  {
+    "slug": "sticky-note-sweatshirt",
+    "id": "6abbbc78aeaf06dc8801fd27",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688376/clipBoard/product-images/nd2u53yuvbxdiytebn9h.png",
+    "status": "created"
+  },
+  {
+    "slug": "heavy-stock-crewneck",
+    "id": "6abbbc7aaeaf06dc8801fd28",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688377/clipBoard/product-images/p28yg3ptxcfjkhldw6yk.png",
+    "status": "created"
+  },
+  {
+    "slug": "blueprint-sweatshirt",
+    "id": "6abbbc7baeaf06dc8801fd29",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688378/clipBoard/product-images/trd18xwkov7x49fkvtsy.png",
+    "status": "created"
+  },
+  {
+    "slug": "everyday-fleece-joggers",
+    "id": "6abbbc7caeaf06dc8801fd2a",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688379/clipBoard/product-images/lgi84r8vm6fosddozixh.png",
+    "status": "created"
+  },
+  {
+    "slug": "commute-tapered-joggers",
+    "id": "6abbbc7daeaf06dc8801fd2b",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688380/clipBoard/product-images/azzlesq4qjd6c5dcvers.png",
+    "status": "created"
+  },
+  {
+    "slug": "lounge-wide-leg-joggers",
+    "id": "6abbbc7eaeaf06dc8801fd2c",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688381/clipBoard/product-images/bbgjrrfsu7fjlhqz7c8c.png",
+    "status": "created"
+  },
+  {
+    "slug": "track-stripe-joggers",
+    "id": "6abbbc7faeaf06dc8801fd2d",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688382/clipBoard/product-images/rglspfastq96uzezemms.png",
+    "status": "created"
+  },
+  {
+    "slug": "cloud-rib-joggers",
+    "id": "6abbbc80aeaf06dc8801fd2e",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688383/clipBoard/product-images/kkqv553ytfudp1er6gzc.png",
+    "status": "created"
+  },
+  {
+    "slug": "cargo-pocket-joggers",
+    "id": "6abbbc81aeaf06dc8801fd2f",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688384/clipBoard/product-images/mdzwhg1l5iyiwnb1cqm5.png",
+    "status": "created"
+  },
+  {
+    "slug": "sunday-slouch-joggers",
+    "id": "6abbbc82aeaf06dc8801fd30",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688385/clipBoard/product-images/jsr1jqctqzcpce1z0prk.png",
+    "status": "created"
+  },
+  {
+    "slug": "night-run-joggers",
+    "id": "6abbbc83aeaf06dc8801fd31",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688386/clipBoard/product-images/uzjktcl7hptklik5u6v2.png",
+    "status": "created"
+  },
+  {
+    "slug": "terry-loop-joggers",
+    "id": "6abbbc84aeaf06dc8801fd32",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688387/clipBoard/product-images/geualbmosvfgjc4zzzit.png",
+    "status": "created"
+  },
+  {
+    "slug": "classic-cuffed-joggers",
+    "id": "6abbbc85aeaf06dc8801fd33",
+    "image": "https://res.cloudinary.com/dmxf5exhr/image/upload/v1790688389/clipBoard/product-images/s0piemidrznykxbrogoc.png",
+    "status": "created"
+  }
+]
