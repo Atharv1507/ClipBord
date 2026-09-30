@@ -12,14 +12,14 @@ const LOGO_SUBPATHS = LOGO_D.split(/(?=M)/)
 // Where the load-in sketch stops: every stroke 38% drawn, the rest is drawn by scrolling.
 const SKETCH = 0.62
 // The moment (timeline seconds) the logo starts flying to the navbar. The black backdrop
-// fades from here, uncovering the film underneath, so the stage is never left empty.
+// fades from here, uncovering the next section as it scrolls up underneath.
 const REVEAL = 3.9
 
 // Scroll-driven hero: the logo is drawn in crimson, fills in cream, then flies into
-// the navbar logo's spot (dockTargetRef). The next section (the film) is pulled up
-// underneath this one and uncovered as the logo flies, so it takes over with no gap.
-// The opening sketch waits for introReady, so it plays as the loading splash lifts.
-function Hero({ dockTargetRef, introReady = true }) {
+// the navbar logo's spot (dockTargetRef). The next section is pulled up underneath this
+// one by a stage's height, so it reaches the navbar just as the logo docks.
+// The section sits above the navbar (z-40) so the logo stays in view the whole way there.
+function Hero({ dockTargetRef }) {
   const rootRef = useRef(null)
   const pinRef = useRef(null)
   const slotRef = useRef(null)
@@ -63,24 +63,16 @@ function Hero({ dockTargetRef, introReady = true }) {
           // Swap the flying logo for the real navbar logo the moment it lands.
           .fromTo(slot, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.01, immediateRender: false }, 6.1)
           .fromTo(target, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, 6.1)
-          // A short beat with the logo docked before the film scrolls in.
+          // A short beat with the logo docked before the pin lets go.
           .to({}, { duration: 0.4 })
 
+        // Nothing is left on the stage, so the next section sits right under the navbar.
         if (context.conditions.reduce) {
           tl.progress(1)
-          // Nothing left on the stage, so the film sits right under the navbar.
-          root.style.marginBottom = `${-pinRef.current.offsetHeight}px`
-          return () => (root.style.marginBottom = '')
+          return
         }
 
-        // Pull the next section up so its sticky stage settles under the navbar exactly as
-        // the backdrop starts to fade (REVEAL): the stage plus the pin distance still to go.
-        const overlap = (self) => {
-          const left = (self.end - self.start) * (1 - REVEAL / tl.duration())
-          root.style.marginBottom = `${-(pinRef.current.offsetHeight + left)}px`
-        }
-
-        const trigger = ScrollTrigger.create({
+        ScrollTrigger.create({
           trigger: pinRef.current,
           start: () => `top ${header.offsetHeight}px`,
           end: '+=200%',
@@ -88,10 +80,7 @@ function Hero({ dockTargetRef, introReady = true }) {
           scrub: 1,
           animation: tl,
           invalidateOnRefresh: true,
-          onRefresh: overlap,
         })
-        overlap(trigger)
-        return () => (root.style.marginBottom = '')
       })
 
       return () => mm.revert()
@@ -102,23 +91,27 @@ function Hero({ dockTargetRef, introReady = true }) {
   // Load-in: sketch the start of every stroke on a timer so the first frame isn't empty.
   useGSAP(
     () => {
-      if (!introReady || window.scrollY >= 10) return
+      if (window.scrollY >= 10) return
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
       const strokes = rootRef.current.querySelectorAll('.hero-stroke')
       gsap.fromTo(strokes, { attr: { 'stroke-dashoffset': 1 } }, { attr: { 'stroke-dashoffset': SKETCH }, duration: 1.4, ease: 'power2.out', stagger: 0.03, delay: 0.2 })
     },
-    { scope: rootRef, dependencies: [introReady] },
+    { scope: rootRef },
   )
 
   return (
-    // Above the film it overlaps, but never in the way of clicks on it.
-    <section ref={rootRef} className="pointer-events-none relative z-10">
-      <div
-        ref={pinRef}
-        className="relative grid h-[calc(100svh-var(--nav-h,64px))] place-items-center overflow-hidden"
-      >
-        <div aria-hidden="true" className="hero-backdrop absolute inset-0 bg-ink" />
-        <div className="hero-glow pointer-events-none absolute size-[70vmin] rounded-full bg-[radial-gradient(closest-side,rgb(179_18_46/0.45),transparent)] opacity-0 blur-xl" />
+    // Above the navbar and the section it overlaps, but never in the way of clicks on them.
+    // The negative margin (one stage height) pulls the next section up underneath.
+    <section ref={rootRef} className="pointer-events-none relative z-[45] mb-[calc(var(--nav-h,64px)-100svh)]">
+      {/* No overflow clipping here: the logo has to leave the stage to reach the navbar. */}
+      <div ref={pinRef} className="relative grid h-[calc(100svh-var(--nav-h,64px))] place-items-center">
+        {/* The stage is sized to the small viewport (browser bars showing), so the backdrop
+            runs a full large viewport down to cover the strip below it when the bars hide. */}
+        <div aria-hidden="true" className="hero-backdrop absolute inset-0 h-lvh bg-ink" />
+        {/* The glow grows past the screen edges, so it's clipped to the stage. */}
+        <div aria-hidden="true" className="absolute inset-0 grid place-items-center overflow-hidden">
+          <div className="hero-glow size-[70vmin] rounded-full bg-[radial-gradient(closest-side,rgb(179_18_46/0.45),transparent)] opacity-0 blur-xl" />
+        </div>
 
         <div
           ref={slotRef}
