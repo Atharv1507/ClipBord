@@ -27,6 +27,10 @@ app.use('/customer',customerRouter)
 app.use('/products',productRoutes)
 
 app.get('/health',(req,res)=>{
+    // readyState 1 = connected
+    if(mongoose.connection.readyState!==1){
+        return res.status(503).json({message:'db unavailable'})
+    }
     res.status(200).json({message:'ok'})
 })
 app.listen(process.env.PORT,()=>{
