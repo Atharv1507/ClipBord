@@ -14,7 +14,7 @@ function HeartIcon() {
 
 function ArrowIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-5 w-5 transition-transform duration-300 group-hover/view:translate-x-1">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 transition-transform duration-300 group-hover/view:translate-x-1 @min-[15rem]:h-5 @min-[15rem]:w-5">
       <path d="M5 12h14M13 6l6 6-6 6" />
     </svg>
   )
@@ -37,7 +37,7 @@ function ProductCard({ product }) {
   const href = `/product/${_id}`
 
   return (
-    <article ref={areaRef} className="group relative mx-auto max-w-sm select-none">
+    <article ref={areaRef} className="group @container relative mx-auto max-w-sm select-none">
       <div ref={swingRef} className="relative origin-top pt-10 will-change-transform">
         {/* The loop over the rail, running down through the eyelet. */}
         <svg viewBox="0 0 20 62" aria-hidden="true" className="absolute left-1/2 top-0 z-10 h-[62px] w-5 -translate-x-1/2 overflow-visible">
@@ -45,19 +45,19 @@ function ProductCard({ product }) {
         </svg>
 
         <div className={`rounded-b-2xl bg-crimson p-[1.5px] ${tagShape}`}>
-          <div className={`relative rounded-b-[15px] bg-smoke px-4 pb-[18px] pt-10 text-paper ${faceShape}`}>
+          <div className={`relative rounded-b-[15px] bg-smoke px-2.5 pb-3 pt-10 text-paper @min-[15rem]:px-4 @min-[15rem]:pb-[18px] ${faceShape}`}>
             {/* The eyelet, ringed by a crimson grommet. */}
             <span aria-hidden="true" className="absolute left-1/2 top-3.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-ink shadow-[0_0_0_3px_var(--color-crimson),0_0_0_5px_var(--color-smoke),0_0_0_6px_rgb(179_18_46/0.45)]" />
 
-            <div className="flex items-center justify-between gap-3">
-              <Monogram className="h-9" />
+            <div className="flex items-center justify-between gap-2 @min-[15rem]:gap-3">
+              <Monogram className="h-7 shrink-0 @min-[15rem]:h-9" />
               {category && (
-                <span className="text-[13px] text-mute">{CATEGORY_LABELS[category] ?? category}</span>
+                <span className="truncate text-[11px] text-mute @min-[15rem]:text-[13px]">{CATEGORY_LABELS[category] ?? category}</span>
               )}
             </div>
 
             {/* The name and View link carry the product page for keyboards and screen readers. */}
-            <Link to={href} tabIndex={-1} aria-hidden="true" className="relative mt-3 block aspect-[1/0.9] overflow-hidden rounded-lg bg-paper-dim">
+            <Link to={href} tabIndex={-1} aria-hidden="true" className="relative mt-2.5 block aspect-[1/0.9] @min-[15rem]:mt-3 overflow-hidden rounded-lg bg-paper-dim">
               {/* The catalog photos (4:5) print the product name along the bottom. This window
                   shows the band from 10% to 82% of the photo: the whole garment, not the name. */}
               <img
@@ -69,18 +69,18 @@ function ProductCard({ product }) {
               />
             </Link>
 
-            <h3 className="mt-[18px] line-clamp-2 min-h-[2lh] font-display text-[26px] leading-[1.12] text-balance">{name}</h3>
+            <h3 className="mt-3 line-clamp-2 min-h-[2lh] font-display text-lg leading-[1.12] text-balance @min-[15rem]:mt-[18px] @min-[15rem]:text-[26px]">{name}</h3>
 
-            <div className="mt-3.5 border-t border-paper/10 pt-3.5">
-              <p className="text-[26px] font-semibold leading-tight tracking-[-0.01em] text-crimson-bright tabular-nums">{formatPrice(price)}</p>
-              <p className="mt-0.5 text-xs text-mute">Incl. of all taxes</p>
+            <div className="mt-2.5 border-t border-paper/10 pt-2.5 @min-[15rem]:mt-3.5 @min-[15rem]:pt-3.5">
+              <p className="text-lg font-semibold leading-tight @min-[15rem]:text-[26px] tracking-[-0.01em] text-crimson-bright tabular-nums">{formatPrice(price)}</p>
+              <p className="mt-0.5 text-[10px] text-mute @min-[15rem]:text-xs">Incl. of all taxes</p>
             </div>
 
-            <div className="mt-4 flex gap-2">
+            <div className="mt-3 flex gap-1.5 @min-[15rem]:mt-4 @min-[15rem]:gap-2">
               <Link
                 to={href}
                 aria-label={`View ${name}`}
-                className="group/view flex flex-1 items-center justify-between rounded-[10px] bg-crimson px-4 py-3 font-semibold text-paper transition hover:brightness-110"
+                className="group/view flex flex-1 items-center justify-between rounded-[10px] bg-crimson px-3 py-2.5 text-sm font-semibold text-paper transition hover:brightness-110 @min-[15rem]:px-4 @min-[15rem]:py-3 @min-[15rem]:text-base"
               >
                 View
                 <ArrowIcon />
@@ -90,7 +90,7 @@ function ProductCard({ product }) {
                 onClick={() => wishlist.toggle(_id)}
                 aria-pressed={saved}
                 aria-label={`Save ${name} to wishlist`}
-                className="group/heart grid w-12 shrink-0 place-items-center rounded-[10px] text-paper ring-[1.5px] ring-paper/20 ring-inset transition-colors hover:bg-paper/5"
+                className="group/heart grid w-10 shrink-0 @min-[15rem]:w-12 place-items-center rounded-[10px] text-paper ring-[1.5px] ring-paper/20 ring-inset transition-colors hover:bg-paper/5"
               >
                 <HeartIcon />
               </button>
