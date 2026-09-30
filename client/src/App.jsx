@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import ProductDetails from './pages/ProductDetails'
 import About from './pages/About'
 import Catalogue from './pages/Catalogue'
+import NotFound from './pages/NotFound'
 
 function App() {
   return(
@@ -18,6 +19,7 @@ function App() {
         <Route path='/product/:id' element={<ProductDetails/>}/>
         <Route path='/about' element={<About/>}/>
         <Route path='/catalogue' element={<Catalogue/>}/>
+        <Route path='*' element={<NotFound/>}/>
     </Routes>
     </BrowserRouter>
   )
