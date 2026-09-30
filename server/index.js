@@ -15,8 +15,10 @@ mongoose.connect(process.env.dbUrl).then(()=>{
     console.log(err)
 })
 
+const allowedOrigins=(process.env.CLIENT_URL||'http://localhost:5173').split(',').map(o=>o.trim())
+
 app.use(cors({
-    origin:'http://localhost:5173',
+    origin:allowedOrigins,
     credentials:true
 }))
 app.use(express.json())

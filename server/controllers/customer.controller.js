@@ -5,6 +5,7 @@ import { hashPass,checkPass } from "../utils/hashPass.js";
 const cookieOptions = {
     httpOnly: true,
     secure: true,
+    sameSite: 'none', // client and API are on different domains in prod
     maxAge: 10 * 24 * 60 * 60 * 1000 // 10 days, same as the JWT expiry
 }
 
