@@ -1,5 +1,5 @@
 /* Clipbord storefront prototype: Gallery layout, Cobalt Club components.
-   Two modes: Paper (light) and Oxblood (dark). Every text pair passes WCAG AA (lowest 5.4:1).
+   Two modes: Paper (light) and Noir (dark). Every text pair passes WCAG AA (lowest 4.8:1).
    Radius rule: photos are square-edged, panels and tiles 20px, anything you press is a pill. */
 :root {
   --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
@@ -27,18 +27,20 @@
   --hero-bg: #F4F3F0; --hero-stroke: #C8102E; --hero-fill: #0B0B0B;
   --photo: #E2DFDA; --scrim: rgb(11 11 11 / .3); --shadow: rgb(11 11 11 / .16);
 }
-/* Dark: Oxblood. Tonal wine-black with a hot red. */
-[data-theme="oxblood"] {
+/* Dark: Noir. Black, signal red, nothing else. */
+[data-theme="noir"] {
   color-scheme: dark;
-  --bg: #15090B; --bg2: #230D11; --ink: #F6EAE8; --soft: #BFA1A3;
-  --line: rgb(246 234 232 / .1); --line-strong: rgb(246 234 232 / .24);
-  --panel: #2D1116; --pink: #F6EAE8; --psoft: #C9A9AB;
-  --accent: #FF3341; --onacc: #15090B; --acctext: #FF5A64;
-  --b1: #5E0F1B; --b1t: #F6EAE8; --b2: #FF3341; --b2t: #15090B; --b3: #2D1116; --b3t: #F6EAE8;
-  --drawer: #230D11; --drawer-ink: #F6EAE8; --drawer-soft: #BFA1A3; --drawer-line: rgb(246 234 232 / .1);
-  --hero-bg: #15090B; --hero-stroke: #FF3341; --hero-fill: #F6EAE8;
-  --photo: #2D1116; --scrim: rgb(10 3 4 / .6); --shadow: rgb(0 0 0 / .5);
+  --bg: #0A0A0A; --bg2: #151515; --ink: #F2F0EC; --soft: #A39F98;
+  --line: rgb(242 240 236 / .12); --line-strong: rgb(242 240 236 / .26);
+  --panel: #ECEAE6; --pink: #0A0A0A; --psoft: #57534E;
+  --accent: #E3120B; --onacc: #FFFFFF; --acctext: #FF4A3D;
+  --b1: #E3120B; --b1t: #FFFFFF; --b2: #ECEAE6; --b2t: #0A0A0A; --b3: #1C1C1C; --b3t: #F2F0EC;
+  --drawer: #151515; --drawer-ink: #F2F0EC; --drawer-soft: #A39F98; --drawer-line: rgb(242 240 236 / .12);
+  --hero-bg: #0A0A0A; --hero-stroke: #E3120B; --hero-fill: #F2F0EC;
+  --photo: #1A1A1A; --scrim: rgb(0 0 0 / .55); --shadow: rgb(0 0 0 / .5);
 }
+/* Noir cards are light panels, so a saved bookmark uses the deeper red there. */
+[data-theme="noir"] .card .save[aria-pressed="true"] .on { color: var(--accent); }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -174,8 +176,8 @@ h1, h2, h3, p, figure { margin: 0; }
 .sheet-foot { margin-top: 18px; color: var(--soft); font-size: 14px; }
 
 /* Light/dark switch */
-.mode-btn .sun, [data-theme="oxblood"] .mode-btn .moon { display: none; }
-[data-theme="oxblood"] .mode-btn .sun { display: block; }
+.mode-btn .sun, [data-theme="noir"] .mode-btn .moon { display: none; }
+[data-theme="noir"] .mode-btn .sun { display: block; }
 
 /* ---------- Hero: logo sketch, fill and dock (home only) ---------- */
 .hero { position: relative; z-index: 45; pointer-events: none; margin-bottom: calc(var(--nav-h) - var(--svh) * 100); }

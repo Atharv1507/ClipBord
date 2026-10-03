@@ -81,13 +81,13 @@
     document.documentElement.dataset.theme = theme;
     if (save) store.set('mode', theme);
     $$('.mode-btn').forEach((b) => {
-      const dark = theme === 'oxblood';
+      const dark = theme === 'noir';
       b.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
       b.setAttribute('aria-pressed', dark);
     });
     window.dispatchEvent(new CustomEvent('cb:theme', { detail: theme }));
   }
-  const toggleMode = () => setMode(document.documentElement.dataset.theme === 'oxblood' ? 'paper' : 'oxblood');
+  const toggleMode = () => setMode(document.documentElement.dataset.theme === 'noir' ? 'paper' : 'noir');
 
   /* ---------- Chrome ---------- */
   const NAV = [

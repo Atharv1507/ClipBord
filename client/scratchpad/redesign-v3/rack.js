@@ -10,7 +10,7 @@ const pin = document.getElementById('rackPin');
 // Ball colours per mode, A D H D.
 const SETS = {
   paper: ['#111111', '#C8102E', '#111111', '#C8102E'],
-  oxblood: ['#FF3341', '#5E0F1B', '#EFE3E1', '#1A0A0C'],
+  noir: ['#D50C08', '#121212', '#EEEBE6', '#D50C08'],
 };
 const LETTERS = ['A', 'D', 'H', 'D'];
 
@@ -78,7 +78,7 @@ function applyTheme(mode) {
     b.mat.map?.dispose();
     b.mat.map = ballTexture(set[i], b.L);
     b.mat.needsUpdate = true;
-    b.shadow.material.opacity = mode === 'oxblood' ? 0.9 : 0.45;
+    b.shadow.material.opacity = mode === 'noir' ? 0.9 : 0.45;
   });
   render();
 }
