@@ -76,7 +76,12 @@ function Hero({ dockTargetRef }) {
           start: () => `top ${header.offsetHeight}px`,
           end: '+=200%',
           pin: true,
-          scrub: 1,
+          // Tied straight to the scroll position, no catch-up lag: Lenis already smooths the
+          // scroll. With a lag (scrub: 1), a fast flick let the pin go while the logo was still
+          // mid-flight, and it rode up with the page before popping into the navbar.
+          scrub: true,
+          // Pins a touch early on a fast scroll so the stage doesn't jump as it locks.
+          anticipatePin: 1,
           animation: tl,
           invalidateOnRefresh: true,
         })
