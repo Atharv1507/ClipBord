@@ -81,7 +81,7 @@ function AccountMenu({ user, onLogout, onOpenChange }) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`Account: ${user.fullName}`}
-        className="flex h-[42px] items-center gap-1 rounded-full pl-[3px] pr-1.5 transition-colors hover:bg-line aria-expanded:bg-line"
+        className="flex h-[42px] items-center gap-1 rounded-full p-[3px] transition-colors md:pr-1.5 hover:bg-line aria-expanded:bg-line"
       >
         <span className={avatar}>{initials(user.fullName)}</span>
         <Icon name="caret" className={`hidden h-3.5 w-3.5 transition-transform duration-300 ease-spring md:block ${open ? 'rotate-180' : ''}`} />
@@ -247,8 +247,8 @@ function Navbar({ logoRef }) {
 
           {user && <span className="md:ml-1.5"><AccountMenu user={user} onLogout={handleLogout} onOpenChange={setAccountOpen} /></span>}
           {!loading && !user && (
-            <Link to="/login" aria-label="Log in" className="grid h-[42px] w-[42px] place-items-center rounded-full transition-colors hover:bg-line md:ml-1.5 md:flex md:w-auto md:border-[1.5px] md:border-line-strong md:px-[18px] md:text-sm md:font-semibold md:hover:border-fg md:hover:bg-transparent">
-              <Icon name="user" className="md:hidden" />
+            <Link to="/login" aria-label="Log in" className="grid h-[42px] w-[42px] place-items-center rounded-full transition-colors hover:bg-line md:ml-1.5 md:flex md:w-auto md:items-center md:border-[1.5px] md:border-line-strong md:px-[18px] md:text-sm md:font-semibold md:hover:border-fg md:hover:bg-transparent">
+              <Icon name="user" className="h-5 w-5 md:hidden" />
               <span className="hidden md:inline">Log in</span>
             </Link>
           )}
@@ -257,10 +257,16 @@ function Navbar({ logoRef }) {
             type="button"
             onClick={openBag}
             aria-label={`Bag, ${count} ${count === 1 ? 'item' : 'items'}`}
-            className="ml-1 flex h-[42px] items-center gap-2.5 rounded-full bg-fg pl-3 pr-1 text-sm font-semibold text-canvas transition-transform duration-300 ease-spring active:scale-[.97] md:ml-2 md:pl-4"
+            className="relative grid h-[42px] w-[42px] place-items-center rounded-full transition-[transform,background-color] duration-300 ease-spring hover:bg-line active:scale-[.97] md:ml-2 md:flex md:w-auto md:items-center md:gap-2.5 md:bg-fg md:pl-4 md:pr-1 md:text-sm md:font-semibold md:text-canvas md:hover:bg-fg"
           >
+            {/* Phones: the bag icon with a small badge. From md up: a "Bag" pill with the count. */}
+            <Icon name="bag" className="h-5 w-5 md:hidden" />
             <span className="hidden md:inline">Bag</span>
-            <span className="grid h-[30px] min-w-[30px] place-items-center rounded-full bg-accent px-2 text-[13px] font-bold tabular-nums text-on-accent">{count}</span>
+            <span
+              className={`absolute right-0 top-0.5 h-[18px] min-w-[18px] place-items-center rounded-full bg-accent px-1 text-[11px] font-bold tabular-nums text-on-accent md:static md:grid md:h-[30px] md:min-w-[30px] md:px-2 md:text-[13px] ${count > 0 ? 'grid' : 'hidden'}`}
+            >
+              {count}
+            </span>
           </button>
         </div>
       </header>
