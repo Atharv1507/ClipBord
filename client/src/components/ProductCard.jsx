@@ -10,17 +10,6 @@ import LoginModal from './LoginModal'
 import BookmarkIcon from './BookmarkIcon'
 import Monogram from './Monogram'
 import Toast from './Toast'
-import hoodieFront from '../assets/placeholders/hoodie-front.jpg'
-import hoodieBack from '../assets/placeholders/hoodie-back.jpg'
-import teeFront from '../assets/placeholders/tee-front.jpg'
-import teeBack from '../assets/placeholders/tee-back.jpg'
-
-// Placeholder photos until the real product shots are in: T-shirts get the tee, everything
-// else the hoodie. The front shows by default and the back fades in on hover.
-const PLACEHOLDERS = {
-  Tshirt: { front: teeFront, back: teeBack },
-  default: { front: hoodieFront, back: hoodieBack },
-}
 
 // The tag's outline: the top corners cut off either side of the eyelet. The crimson layer
 // is cut to this shape and the face sits 1.5px inside it, so a crimson foil line traces
@@ -47,8 +36,7 @@ const notchStyle = {
 // Hovering swings it on its string. The photo and name open the product page, and the
 // bookmark saves it to the wishlist.
 function ProductCard({ product }) {
-  const { _id, name, price, category } = product
-  const photo = PLACEHOLDERS[category] ?? PLACEHOLDERS.default
+  const { _id, name, price, image } = product
   const { areaRef, swingRef } = useSwing()
   const { saved, toggle } = useWishlist(_id)
   const { user } = useAuth()
@@ -84,21 +72,17 @@ function ProductCard({ product }) {
               <span aria-hidden="true" className="absolute left-1/2 top-3.5 z-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-ink shadow-[0_0_0_3px_var(--color-crimson),0_0_0_5px_var(--color-paper-dim),0_0_0_6px_rgb(179_18_46/0.45)]" />
 
               {/* The name link carries the product page for keyboards and screen readers. */}
-              <Link to={href} tabIndex={-1} aria-hidden="true" className="relative block aspect-[1/1.1] overflow-hidden">
-                {/* The tall photos are cropped to the middle of the garment, where the print is. */}
+              <Link to={href} tabIndex={-1} aria-hidden="true" className="flex aspect-[1/1.1] flex-col justify-end overflow-hidden">
+                {/* The catalog photos (4:5) print the product name along the bottom. The photo
+                    is pinned to the bottom of this window with its last 22% (of the width) cut
+                    off, so it shows the band down to 82% of the photo: the whole garment, not
+                    the name. The photo's own cream ground matches the tag's. */}
                 <img
-                  src={photo.front}
+                  src={image}
                   alt=""
                   loading="lazy"
                   draggable="false"
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                />
-                <img
-                  src={photo.back}
-                  alt=""
-                  loading="lazy"
-                  draggable="false"
-                  className="absolute inset-0 h-full w-full object-cover opacity-0 transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.04] group-hover:opacity-100"
+                  className="-mb-[22%] aspect-[4/5] w-full shrink-0 transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                 />
               </Link>
 
