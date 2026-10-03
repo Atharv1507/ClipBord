@@ -145,6 +145,6 @@ if (REDUCE || STATIC) {
   const tl = gsap.timeline({ defaults: { ease: 'none' } });
   balls.forEach((b, i) => tl.to(b, { p: 1, duration: 1, ease: 'power2.out' }, i * 0.18));
   tl.to('.rack-title em', { yPercent: 0, duration: 0.6, stagger: 0.15, ease: 'power3.out' }, 0.3).to({}, { duration: 0.35 });
-  ScrollTrigger.create({ trigger: pin, start: () => `top ${document.getElementById('siteHeader').offsetHeight}px`, end: '+=140%', invalidateOnRefresh: true, pin: true, scrub: 0.8, animation: tl, refreshPriority: 5, onUpdate: () => { if (!raf) render(); } });
+  ScrollTrigger.create({ trigger: pin, start: () => `top ${document.getElementById('siteHeader').offsetHeight}px`, end: '+=280%', invalidateOnRefresh: true, pin: true, scrub: 1.2, animation: tl, refreshPriority: 5, onUpdate: () => { if (!raf) render(); } });
   resize();
 }

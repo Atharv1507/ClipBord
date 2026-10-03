@@ -6,28 +6,28 @@ import { ArrowRightIcon, CheckIcon, ChevronIcon, SlidersIcon } from './icons'
 // They don't overlap, so a ₹999 tee sits in exactly one band.
 const PRICE_BANDS = [
   { label: `Under ${formatPrice(500)}`, max: 499 },
-  { label: `${formatPrice(500)} – ${formatPrice(999)}`, min: 500, max: 999 },
-  { label: `${formatPrice(1000)} – ${formatPrice(1999)}`, min: 1000, max: 1999 },
+  { label: `${formatPrice(500)} to ${formatPrice(999)}`, min: 500, max: 999 },
+  { label: `${formatPrice(1000)} to ${formatPrice(1999)}`, min: 1000, max: 1999 },
   { label: `${formatPrice(2000)} & above`, min: 2000 },
 ]
 
-// A titled block of the sidebar that folds away under its heading.
+// A titled block of the filters that folds away under its heading.
 function FilterSection({ title, children }) {
   const [open, setOpen] = useState(true)
   const bodyId = useId()
 
   return (
-    <section className="border-t border-paper/10 px-5 py-4">
+    <section className="border-t border-drawer-line px-5 py-4">
       <h3>
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
           aria-controls={bodyId}
-          className="flex w-full items-center justify-between gap-3 rounded-md py-1 text-left text-paper"
+          className="flex w-full items-center justify-between gap-3 rounded-md py-1 text-left font-semibold text-drawer-fg"
         >
           {title}
-          <span className="grid h-7 w-7 place-items-center rounded-full text-mute transition-colors hover:bg-paper/10 hover:text-paper">
+          <span className="grid h-7 w-7 place-items-center rounded-full text-drawer-soft transition-colors hover:bg-drawer-line hover:text-drawer-fg">
             <ChevronIcon up={open} />
           </span>
         </button>
@@ -40,7 +40,7 @@ function FilterSection({ title, children }) {
 }
 
 // A real checkbox (visually hidden, still focusable) drawn as a rounded square that
-// fills crimson with a check. `count` is the matching products, when the API sends it.
+// fills red with a check. `count` is the matching products, when the API sends it.
 function FilterCheckbox({ label, checked, onChange, count }) {
   const id = useId()
   // Nothing to find here with the other filters as they are; still tickable.
@@ -49,13 +49,13 @@ function FilterCheckbox({ label, checked, onChange, count }) {
   return (
     <label
       htmlFor={id}
-      className={`relative flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-paper/5 ${empty ? 'text-mute' : 'text-paper'}`}
+      className={`relative flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-drawer-line ${empty ? 'text-drawer-soft' : 'text-drawer-fg'}`}
     >
       <input id={id} type="checkbox" checked={checked} onChange={onChange} className="peer sr-only" />
       <span
         aria-hidden="true"
-        className={`grid h-5 w-5 shrink-0 place-items-center rounded-md transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-crimson-bright ${
-          checked ? 'bg-crimson text-paper' : 'ring-[1.5px] ring-inset ring-paper/30'
+        className={`grid h-5 w-5 shrink-0 place-items-center rounded-md transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-drawer-fg ${
+          checked ? 'bg-accent text-on-accent' : 'ring-[1.5px] ring-inset ring-drawer-soft'
         }`}
       >
         {checked && <CheckIcon />}
@@ -65,7 +65,7 @@ function FilterCheckbox({ label, checked, onChange, count }) {
         <>
           <span
             aria-hidden="true"
-            className={`min-w-7 rounded-full px-2 py-0.5 text-center text-xs tabular-nums ${checked ? 'bg-crimson/25 text-paper' : 'bg-paper/10 text-mute'}`}
+            className={`min-w-7 rounded-full px-2 py-0.5 text-center text-xs tabular-nums ${checked ? 'bg-accent/20 text-drawer-fg' : 'bg-drawer-line text-drawer-soft'}`}
           >
             {count}
           </span>
@@ -87,7 +87,7 @@ function toBound(text) {
 }
 
 const priceInputClass =
-  'w-full rounded-lg bg-smoke py-2 pl-6 pr-2 text-base text-paper tabular-nums ring-1 ring-paper/10 outline-none transition-shadow placeholder:text-neutral-600 focus:ring-crimson-bright sm:text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+  'w-full rounded-lg bg-transparent py-2 pl-6 pr-2 text-base text-drawer-fg tabular-nums ring-[1.5px] ring-drawer-line outline-none transition-shadow placeholder:text-drawer-soft focus:ring-drawer-fg sm:text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
 
 // Min/Max boxes for a custom range. Typing only edits the boxes; the range applies on
 // Enter, the arrow button, or when focus leaves the pair (not when moving Min -> Max).
@@ -130,11 +130,11 @@ function PriceInputs({ minPrice, maxPrice, bounds, onApply }) {
         ['max', 'Max', bounds.max !== null ? Math.ceil(bounds.max) : 'Any'],
       ].map(([key, label, placeholder]) => (
         <div key={key} className="min-w-0 flex-1">
-          <label htmlFor={`${id}-${key}`} className="mb-1 block text-xs text-mute">
+          <label htmlFor={`${id}-${key}`} className="mb-1 block text-xs text-drawer-soft">
             {label}
           </label>
           <div className="relative">
-            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-mute">
+            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-drawer-soft">
               ₹
             </span>
             <input
@@ -153,7 +153,7 @@ function PriceInputs({ minPrice, maxPrice, bounds, onApply }) {
       <button
         type="submit"
         aria-label="Apply price range"
-        className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-lg bg-paper/10 text-paper transition-colors hover:bg-crimson"
+        className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full bg-drawer-line text-drawer-fg transition-colors hover:bg-accent hover:text-on-accent"
       >
         <ArrowRightIcon />
       </button>
@@ -161,7 +161,7 @@ function PriceInputs({ minPrice, maxPrice, bounds, onApply }) {
   )
 }
 
-// The filter sidebar's contents, shared by the desktop sidebar and the mobile drawer.
+// The filters, shown in the drawer the catalogue's Filters button opens.
 // `filters` and the handlers come from useCatalogueFilters, `facets` from useProducts.
 // `headerAction` is the button at the end of the header row (collapse or close).
 function FilterPanel({ filters, facets, activeCount, onToggle, onPrice, onClear, headerAction, titleId }) {
@@ -171,11 +171,11 @@ function FilterPanel({ filters, facets, activeCount, onToggle, onPrice, onClear,
     <div>
       <div className="flex items-center gap-2.5 px-5 py-4">
         <SlidersIcon />
-        <h2 id={titleId} className="">
+        <h2 id={titleId} className="display text-[30px]">
           Filter
         </h2>
         {activeCount > 0 && (
-          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-crimson px-1.5 text-[12px] text-paper">
+          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1.5 text-[12px] text-on-accent">
             {activeCount}
             <span className="sr-only"> active</span>
           </span>
@@ -185,7 +185,7 @@ function FilterPanel({ filters, facets, activeCount, onToggle, onPrice, onClear,
             <button
               type="button"
               onClick={onClear}
-              className="rounded-md px-2 py-1 text-sm text-mute underline decoration-crimson-bright underline-offset-4 transition-colors hover:text-paper"
+              className="rounded-md px-2 py-1 text-sm text-drawer-soft underline underline-offset-4 transition-colors hover:text-drawer-fg"
             >
               Clear all
             </button>

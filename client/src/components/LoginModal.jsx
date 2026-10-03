@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { Icon } from './Icons'
 
 // Asks a logged-out visitor to log in before doing something that needs an account,
-// like adding to the cart. A native modal <dialog> handles focus trapping, Escape and
-// hiding the page from screen readers; clicking the dimmed backdrop also closes it.
+// like bookmarking or adding to the bag. A native modal <dialog> handles focus trapping,
+// Escape and hiding the page from screen readers; clicking the dimmed backdrop closes it.
 function LoginModal({ open, onClose, title = 'Log in to continue', children }) {
   const dialogRef = useRef(null)
 
@@ -30,37 +31,26 @@ function LoginModal({ open, onClose, title = 'Log in to continue', children }) {
       aria-labelledby="login-modal-title"
       onClose={onClose}
       onClick={(e) => {
-        // Only the backdrop is the dialog itself; the content sits in the inner div.
         if (e.target === e.currentTarget) onClose()
       }}
-      className="fixed inset-0 m-auto h-fit w-[calc(100%-2rem)] max-w-sm rounded-md border-0 bg-raised p-0 text-paper backdrop:bg-ink/70 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-y-2 motion-safe:starting:opacity-0"
+      className="fixed inset-0 m-auto h-fit w-[calc(100%-2rem)] max-w-[440px] rounded-[28px] border-0 bg-drawer/70 p-2 text-drawer-fg shadow-[0_0_0_1px_var(--c-drawer-line),0_40px_80px_-30px_var(--c-shadow)] backdrop:bg-scrim motion-safe:animate-[rise-in_.5s_var(--ease-spring)]"
     >
-      <div className="p-8">
-        <h2 id="login-modal-title" className="tracking-display text-3xl leading-tight">
-          {title}
-        </h2>
-        <div className="mt-3 text-sm leading-relaxed text-mute">{children}</div>
-
-        <div className="mt-8 flex flex-col gap-3">
-          <Link
-            to="/login"
-            className="rounded-md bg-crimson px-5 py-3 text-center text-paper transition hover:brightness-110"
-          >
+      <div className="rounded-[22px] bg-drawer px-6 pb-6 pt-7">
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="login-modal-title" className="display text-[clamp(36px,6vw,48px)]">{title}</h2>
+          <button type="button" onClick={onClose} aria-label="Close" className="-mr-2 -mt-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-full hover:bg-drawer-line">
+            <Icon name="x" />
+          </button>
+        </div>
+        <div className="mt-3 text-sm text-drawer-soft">{children}</div>
+        <div className="mt-6 flex flex-col gap-2.5">
+          <Link to="/login" className="flex h-[52px] items-center justify-between rounded-full bg-accent pl-6 pr-2 font-semibold text-on-accent">
             Log in
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-on-accent/15"><Icon name="arrow" className="h-4 w-4" /></span>
           </Link>
-          <Link
-            to="/signup"
-            className="rounded-md bg-smoke px-5 py-3 text-center text-paper transition-colors hover:bg-ink"
-          >
+          <Link to="/signup" className="flex h-[52px] items-center justify-center rounded-full border-[1.5px] border-drawer-line font-semibold">
             Create an account
           </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            className="py-2 text-sm text-mute transition-colors hover:text-paper"
-          >
-            Not now
-          </button>
         </div>
       </div>
     </dialog>

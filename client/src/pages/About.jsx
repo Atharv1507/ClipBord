@@ -5,11 +5,11 @@ import Footer from '../components/Footer'
 import { useSmoothScroll } from '../hooks/useSmoothScroll'
 import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../utils/contact'
 
-const sectionClass = 'scroll-mt-24 border-t border-paper/10 py-14 first-of-type:border-t-0 sm:py-20'
-const headingClass = 'text-5xl tracking-display sm:text-6xl'
-const bodyClass = 'mt-6 max-w-[60ch] text-lg leading-relaxed text-mute'
+const sectionClass = 'scroll-mt-24 border-t border-line py-14 first-of-type:border-t-0 sm:py-20'
+const headingClass = 'display text-[clamp(56px,9vw,140px)]'
+const bodyClass = 'mt-6 max-w-[60ch] text-lg leading-relaxed text-fg-soft'
 const inlineLinkClass =
-  'text-paper underline decoration-crimson-bright underline-offset-4 transition-colors hover:text-crimson-bright'
+  'text-fg underline decoration-accent decoration-2 underline-offset-4 transition-colors hover:text-accent-fg'
 
 // About page: who we are, our story and how to reach us. The footer links straight to
 // each section (/about#about, #story, #contact).
@@ -30,7 +30,7 @@ function About() {
     <div id="top" className="flex min-h-screen flex-col">
       <Navbar />
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="px-4 md:px-[clamp(16px,2.2vw,32px)]">
           <h1 className="sr-only">About Clipbord</h1>
 
           <section id="about" aria-labelledby="about-heading" className={sectionClass}>
@@ -51,7 +51,7 @@ function About() {
                 the mirror and think: “Yep. That’s so me.”
               </p>
               <p>No fixed style. No boring rules. Just your vibe.</p>
-              <p className="text-paper">Welcome to CLIPBORD. Wear it your way.</p>
+              <p className="text-fg">Welcome to CLIPBORD. Wear it your way.</p>
             </div>
           </section>
 

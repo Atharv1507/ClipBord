@@ -2,29 +2,32 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import ProductRack from '../components/ProductRack'
+import ProductGrid from '../components/ProductGrid'
+import { Icon } from '../components/Icons'
+import { panelClass, pillButton } from '../components/ProductResults'
 import { axiosInstance } from '../axiosCalls/axios'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { useSmoothScroll } from '../hooks/useSmoothScroll'
+import { plural } from '../utils/product'
 
-// The saved products as hang tags, same as the catalogue. Un-bookmarking a tag here
-// empties its bookmark but leaves it on the rail until the page is opened again, so
-// the grid doesn't jump under the cursor and a mis-tap can be undone.
+const gutter = 'px-4 md:px-[clamp(16px,2.2vw,32px)]'
+
+// The bookmarked products. Un-bookmarking one here empties its bookmark but leaves it in
+// the grid until the page is opened again, so the grid doesn't jump under the cursor and
+// a mis-tap can be undone.
 function Wishlist() {
   const [products, setProducts] = useState([])
-  const [status, setStatus] = useState('loading') // 'loading' | 'ready' | 'error' | 'loggedOut'
+  const [status, setStatus] = useState('loading') // 'loading' | 'ready' | 'error'
   const [error, setError] = useState('')
+  const [attempt, setAttempt] = useState(0)
   useSmoothScroll()
 
   useEffect(() => {
-    document.title = 'Wishlist · Clipbord'
+    document.title = 'Bookmarks · Clipbord'
     return () => {
       document.title = 'Clipbord'
     }
   }, [])
-
-  // Bumping this runs the effect below again; the Try again button uses it.
-  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     let ignore = false
@@ -38,88 +41,58 @@ function Wishlist() {
       .catch((err) => {
         if (ignore) return
         console.log(err)
-        if (err.response?.status === 401) {
-          setStatus('loggedOut')
-        } else {
-          setError(getErrorMessage(err, "Couldn't load your wishlist. Please try again."))
-          setStatus('error')
-        }
+        setError(getErrorMessage(err, "Couldn't load your bookmarks. Please try again."))
+        setStatus('error')
       })
     return () => {
       ignore = true
     }
   }, [attempt])
 
-  function handleRetry() {
-    setStatus('loading')
-    setAttempt((n) => n + 1)
-  }
-
   const isEmpty = status === 'ready' && products.length === 0
 
   return (
     <div id="top" className="flex min-h-screen flex-col">
       <Navbar />
-
       <main className="flex-1" aria-busy={status === 'loading'}>
-        <div className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:px-6 md:pt-14">
-          <div className="flex items-baseline justify-between gap-4">
-            <h1 className="text-5xl tracking-display sm:text-6xl">Your wishlist</h1>
-            {status === 'ready' && !isEmpty && (
-              <p className="text-sm text-mute">
-                {products.length} {products.length === 1 ? 'item' : 'items'}
-              </p>
+        <header className={`${gutter} pb-7 pt-[clamp(36px,5vw,72px)]`}>
+          <p className="flex gap-2 text-[13px] text-fg-soft">
+            <Link to="/home" className="hover:text-fg hover:underline hover:underline-offset-[3px]">Shop</Link>
+            <span aria-hidden="true">/</span>
+            <span>Bookmarks</span>
+          </p>
+          <h1 className="display mt-3.5 text-[clamp(64px,13vw,220px)]">
+            Bookmarks
+            {status === 'ready' && (
+              <sup className="relative top-[.6em] ml-[.3em] align-top font-sans text-[clamp(14px,1.3vw,18px)] font-medium tracking-normal text-fg-soft">
+                {plural(products.length, 'piece')}
+              </sup>
             )}
-          </div>
+          </h1>
+        </header>
 
-          {status === 'loading' && (
-            <div className="mt-10">
-              <ProductRack placeholders={4} />
-            </div>
-          )}
+        <div className={gutter}>
+          {status === 'loading' && <ProductGrid placeholders={4} />}
 
           {status === 'error' && (
-            <div role="alert" className="mt-10 max-w-lg rounded-md bg-raised p-8">
-              <p className="text-paper">{error}</p>
-              <button
-                type="button"
-                onClick={handleRetry}
-                className="mt-6 rounded-md bg-crimson px-5 py-2.5 text-sm text-paper transition hover:brightness-110"
-              >
-                Try again
-              </button>
-            </div>
-          )}
-
-          {status === 'loggedOut' && (
-            <div className="mt-10 max-w-lg">
-              <p className="text-lg leading-relaxed text-mute">Log in to see your wishlist.</p>
-              <Link
-                to="/login"
-                className="mt-8 inline-block rounded-md bg-crimson px-8 py-4 text-paper transition hover:brightness-110"
-              >
-                Log in
-              </Link>
+            <div role="alert" className={panelClass}>
+              <p>{error}</p>
+              <button type="button" onClick={() => { setStatus('loading'); setAttempt((n) => n + 1) }} className={pillButton}>Try again</button>
             </div>
           )}
 
           {isEmpty && (
-            <div className="mt-10 max-w-lg">
-              <p className="text-lg leading-relaxed text-mute">Nothing saved yet. Tap the bookmark on any tag to keep it here.</p>
-              <Link
-                to="/catalogue"
-                className="mt-8 inline-block rounded-md bg-crimson px-8 py-4 text-paper transition hover:brightness-110"
-              >
-                Browse the catalogue
+            <div className="rounded-panel bg-panel px-[clamp(20px,4vw,56px)] py-[clamp(48px,8vw,110px)] text-panel-fg">
+              <h2 className="display text-[clamp(40px,6vw,84px)]">Nothing saved yet.</h2>
+              <p className="mt-3.5 max-w-[46ch] text-panel-soft">Tap the bookmark on any piece to keep it here for later.</p>
+              <Link to="/home#new" className="group mt-7 inline-flex h-[52px] items-center gap-3 rounded-full bg-accent pl-6 pr-2 font-semibold text-on-accent">
+                Shop the new drop
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-on-accent/15"><Icon name="arrow" className="h-4 w-4" /></span>
               </Link>
             </div>
           )}
 
-          {status === 'ready' && !isEmpty && (
-            <div className="mt-10">
-              <ProductRack products={products} />
-            </div>
-          )}
+          {status === 'ready' && !isEmpty && <ProductGrid products={products} />}
         </div>
       </main>
       <Footer />

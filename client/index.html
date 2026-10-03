@@ -1,16 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="paper">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/clipbord.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#F4F3F0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0A0A0A" media="(prefers-color-scheme: dark)" />
+    <!-- Light or dark before the first paint: the saved choice, else the system setting.
+         useTheme keeps it in sync after that. -->
+    <script>
+      (function () {
+        var saved
+        try { saved = localStorage.getItem('cb-mode') } catch (e) {}
+        var dark = saved ? saved === 'noir' : matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.dataset.theme = dark ? 'noir' : 'paper'
+      })()
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&display=swap" />
-    <!-- Forum has no rupee sign; this loads just that glyph from Noto Serif. -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif&text=%E2%82%B9&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Geist:wght@400;500;600&display=swap" />
     <title>Clipbord</title>
   </head>
   <body>

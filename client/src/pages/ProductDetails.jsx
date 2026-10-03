@@ -1,10 +1,38 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 import ProductView from '../components/ProductView'
+import ProductGrid from '../components/ProductGrid'
+import { pillButton } from '../components/ProductResults'
 import { axiosInstance } from '../axiosCalls/axios'
 import { getErrorMessage } from '../utils/getErrorMessage'
+import { useProducts } from '../hooks/useProducts'
 import { useSmoothScroll } from '../hooks/useSmoothScroll'
+import { CATEGORY_LABELS, categoryPath } from '../utils/product'
+
+const gutter = 'px-4 md:px-[clamp(16px,2.2vw,32px)]'
+
+// Four more pieces under the product: others from its category first, then the newest.
+function MoreLikeThis({ product }) {
+  const same = useProducts({ limit: 5, filters: { category: [product.category] } })
+  const latest = useProducts({ limit: 8 })
+  if (same.status !== 'ready' || latest.status !== 'ready') return null
+  const seen = new Set([product._id])
+  const picks = [...same.products, ...latest.products].filter((p) => !seen.has(p._id) && seen.add(p._id)).slice(0, 4)
+  if (!picks.length) return null
+  return (
+    <section aria-labelledby="more-title" className="pt-[clamp(96px,10vw,150px)]">
+      <div className={`flex items-baseline justify-between pb-[22px] ${gutter}`}>
+        <h2 id="more-title" className="text-[15px] font-semibold">You might also like</h2>
+        <Link to={categoryPath(product.category)} className="text-sm text-fg-soft hover:text-fg hover:underline hover:underline-offset-[3px]">
+          All {CATEGORY_LABELS[product.category]?.toLowerCase() ?? 'pieces'}
+        </Link>
+      </div>
+      <div className={gutter}><ProductGrid products={picks} /></div>
+    </section>
+  )
+}
 
 function ProductDetails() {
   const { id } = useParams()
@@ -12,20 +40,12 @@ function ProductDetails() {
   const [status, setStatus] = useState('loading') // 'loading' | 'error' | 'ready'
   const [error, setError] = useState('')
   const [attempt, setAttempt] = useState(0)
-  // TODO: once the cart API exists, move this into a shared cart context so the
-  // badge is right on every page, not just this one.
-  const [cartCount, setCartCount] = useState(0)
   useSmoothScroll()
 
-  // Coming from partway down the home page would otherwise open this page mid-way down.
+  // Coming from partway down another page would otherwise open this one mid-way down.
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [id])
-
-  // TODO: Load the badge count.
-  //   - In a useEffect, GET /cart/getCart and setCartCount(res.data.cart.count).
-  //   - A 401 just means nobody is logged in: leave the count at 0.
-  //   - Use the same `ignore` pattern as the product request below.
 
   useEffect(() => {
     let ignore = false
@@ -55,58 +75,59 @@ function ProductDetails() {
     }
   }, [product])
 
-  function handleRetry() {
-    setStatus('loading')
-    setAttempt((n) => n + 1)
-  }
-
   // Back/forward between two product pages reuses this page, so hold off showing
   // the old product under the new id.
   const current = product?._id === id ? product : null
+  const label = current ? CATEGORY_LABELS[current.category] ?? current.category : null
 
   return (
     <div id="top" className="flex min-h-screen flex-col">
-      <Navbar cartCount={cartCount} />
+      <Navbar />
       <main className="flex-1" aria-busy={status === 'loading'}>
+        <p className={`flex gap-2 border-b border-line py-[18px] text-[13px] text-fg-soft ${gutter}`}>
+          <Link to="/home" className="hover:text-fg hover:underline hover:underline-offset-[3px]">Shop</Link>
+          {current && (
+            <>
+              <span aria-hidden="true">/</span>
+              <Link to={categoryPath(current.category)} className="hover:text-fg hover:underline hover:underline-offset-[3px]">{label}</Link>
+              <span aria-hidden="true">/</span>
+              <span className="truncate">{current.name}</span>
+            </>
+          )}
+        </p>
+
         {status === 'error' && (
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-            <div role="alert" className="max-w-lg rounded-md bg-raised p-8">
-              <p className="text-paper">{error}</p>
-              <div className="mt-6 flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleRetry}
-                  className="rounded-md bg-crimson px-5 py-2.5 text-sm text-paper transition hover:brightness-110"
-                >
-                  Try again
-                </button>
-                <Link to="/home" className="rounded-md px-5 py-2.5 text-sm text-mute transition-colors hover:text-paper">
-                  Back to the drop
-                </Link>
+          <div className={`py-16 ${gutter}`}>
+            <div role="alert" className="max-w-xl rounded-panel bg-panel p-8 text-panel-fg">
+              <p className="display text-[clamp(36px,5vw,56px)]">This piece didn't load.</p>
+              <p className="mt-3 text-panel-soft">{error}</p>
+              <div className="flex flex-wrap gap-3">
+                <button type="button" onClick={() => { setStatus('loading'); setAttempt((n) => n + 1) }} className={pillButton}>Try again</button>
+                <Link to="/home#new" className="mt-6 inline-flex h-12 items-center px-2 text-sm underline underline-offset-4">Back to the drop</Link>
               </div>
             </div>
           </div>
         )}
 
         {status !== 'error' && current && (
-          <ProductView
-            key={current._id}
-            product={current}
-            onAdded={(quantity) => setCartCount((n) => n + quantity)}
-          />
+          <>
+            <ProductView key={current._id} product={current} />
+            <MoreLikeThis key={`more-${current._id}`} product={current} />
+          </>
         )}
 
         {status !== 'error' && !current && (
           <div className="grid md:grid-cols-[7fr_5fr]" aria-hidden="true">
-            <div className="aspect-[4/5] bg-raised motion-safe:animate-pulse md:aspect-auto md:h-[calc(100svh_-_var(--nav-h,64px))]" />
-            <div className="flex flex-col gap-4 px-4 pt-8 sm:px-8 md:px-11 md:pt-24">
-              <div className="h-3 w-24 rounded-md bg-raised motion-safe:animate-pulse" />
-              <div className="h-14 w-4/5 rounded-md bg-raised motion-safe:animate-pulse" />
-              <div className="h-16 w-full max-w-md rounded-md bg-raised motion-safe:animate-pulse" />
+            <div className="aspect-[4/5] bg-photo motion-safe:animate-pulse" />
+            <div className="flex flex-col gap-4 px-4 pt-8 md:px-[clamp(24px,4.5vw,72px)] md:pt-10">
+              <div className="h-4 w-24 rounded-full bg-photo motion-safe:animate-pulse" />
+              <div className="h-20 w-4/5 rounded-2xl bg-photo motion-safe:animate-pulse" />
+              <div className="h-12 w-full max-w-md rounded-full bg-photo motion-safe:animate-pulse" />
             </div>
           </div>
         )}
       </main>
+      <Footer />
     </div>
   )
 }
