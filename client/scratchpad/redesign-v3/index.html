@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clipbord</title>
+<script>/* Mode before first paint: saved choice, ?mode=light|dark, else the system setting. */(function(){var t,q=new URLSearchParams(location.search).get('mode');try{t=JSON.parse(localStorage.getItem('cb3-mode'))}catch(e){}document.documentElement.dataset.theme=q==='dark'?'oxblood':q==='light'?'paper':t||(matchMedia('(prefers-color-scheme: dark)').matches?'oxblood':'paper')})()</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+} }
+</script>
+</head>
+<body data-page="home">
+<div id="chrome-header"></div>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="hero-pin" id="heroPin">
+      <div class="hero-backdrop" aria-hidden="true"></div>
+      <div class="hero-glow" aria-hidden="true"><span id="heroGlow"></span></div>
+      <div class="hero-slot" id="heroSlot" aria-hidden="true">
+        <svg viewBox="0 0 1000 642.7">
+          <path class="hero-fill" fill="currentColor" fill-rule="evenodd" fill-opacity="0" d=""/>
+          <g id="heroStrokes" fill="none" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"></g>
+        </svg>
+      </div>
+      <h1 class="sr-only">Clipbord: tees, sweatshirts and joggers</h1>
+    </div>
+  </section>
+
+  <section class="campaign" aria-labelledby="campTitle">
+    <div class="campaign-media">
+      <figure><img src="/scratchpad/redesign/img/hoodie-front.jpg" alt="Model in the cream ADHD Pool Ball Hoodie, hands in the front pocket"></figure>
+      <figure><img src="/scratchpad/redesign/img/tee-back.jpg" alt="Back of the black Cue the Chaos Tee: red script above a pool cue"></figure>
+    </div>
+    <div class="campaign-caption">
+      <h2 class="display" id="campTitle">Cue the chaos.</h2>
+      <div class="campaign-side">
+        <p>Two hoodies, two tees and the Night Run Joggers. The new drop, in cream and black.</p>
+        <a class="btn btn-accent" href="#new">Shop the drop <span class="nub"><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="new" aria-labelledby="newTitle">
+    <div class="section-head"><h2 id="newTitle">New drop</h2><a href="category.html">Shop all</a></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="rack" aria-labelledby="rackTitle">
+    <div class="rack-pin" id="rackPin">
+      <canvas id="rackCanvas" aria-hidden="true"></canvas>
+      <div class="rack-copy">
+        <h2 class="rack-title display" id="rackTitle"><span><em>Four balls.</em></span><span><em>Zero focus.</em></span></h2>
+        <div></div>
+        <div class="rack-foot">
+          <p>The ADHD print: A, D, H and D racked up in pool balls across the chest.</p>
+          <a class="btn btn-accent" href="product.html?id=adhd-pool-ball-tee">Shop the ADHD tee <span class="nub"><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="categories" aria-labelledby="catTitle">
+    <div class="section-head"><h2 id="catTitle">Shop by category</h2></div>
+    <div class="tiles" id="tiles"></div>
+  </section>
+</main>
+
+<div id="chrome-footer"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="app.js"></script>
+<script type="module" src="rack.js"></script>
+</body>
+</html>
