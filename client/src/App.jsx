@@ -7,21 +7,27 @@ import ProductDetails from './pages/ProductDetails'
 import About from './pages/About'
 import Catalogue from './pages/Catalogue'
 import NotFound from './pages/NotFound'
-
+import Cart from './pages/Cart'
+import { AuthProvider } from './context/AuthContext'
+import PublicRoute from './components/PublicRoute'
+import ProtectedRoute from './components/ProtectedRoute'
 function App() {
   return(
+<AuthProvider>
     <BrowserRouter>
     <Routes>
         <Route path='/' element={<Navigate to='/home' replace/>}/>
-        <Route path='/signup' element={<Signup/>}/>
+        <Route path='/signup' element={<PublicRoute><Signup/></PublicRoute>}/>
         <Route path='/home' element={<Home/>}/>
-        <Route path='/login' element={<Login/>}/>
+        <Route path='/login' element={<PublicRoute><Login/></PublicRoute>}/>
         <Route path='/product/:id' element={<ProductDetails/>}/>
         <Route path='/about' element={<About/>}/>
         <Route path='/catalogue' element={<Catalogue/>}/>
+        <Route path='/cart' element={<ProtectedRoute><Cart/></ProtectedRoute>}/>
         <Route path='*' element={<NotFound/>}/>
     </Routes>
     </BrowserRouter>
+</AuthProvider>
   )
 
 }

@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import ProductView from '../components/ProductView'
 import { axiosInstance } from '../axiosCalls/axios'
-import { getCartCount } from '../axiosCalls/cart'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { useSmoothScroll } from '../hooks/useSmoothScroll'
 
@@ -23,17 +22,10 @@ function ProductDetails() {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [id])
 
-  useEffect(() => {
-    let ignore = false
-    getCartCount()
-      .then((count) => {
-        if (!ignore) setCartCount(count)
-      })
-      .catch((err) => console.log(err))
-    return () => {
-      ignore = true
-    }
-  }, [])
+  // TODO: Load the badge count.
+  //   - In a useEffect, GET /cart/getCart and setCartCount(res.data.cart.count).
+  //   - A 401 just means nobody is logged in: leave the count at 0.
+  //   - Use the same `ignore` pattern as the product request below.
 
   useEffect(() => {
     let ignore = false

@@ -3,9 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { SplitText } from 'gsap/SplitText'
 import { useGSAP } from '@gsap/react'
-import { addToCart } from '../axiosCalls/cart'
+import { axiosInstance } from '../axiosCalls/axios'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { CATEGORY_LABELS, SIZES, formatPrice } from '../utils/product'
+import { useAuth } from '../context/AuthContext'
+import LoginModal from './LoginModal'
 
 gsap.registerPlugin(useGSAP, SplitText)
 
@@ -33,7 +35,8 @@ function ProductView({ product, onAdded }) {
   const [quantity, setQuantity] = useState(1)
   const [status, setStatus] = useState('idle') // 'idle' | 'adding' | 'added'
   const [message, setMessage] = useState('')
-
+  const {user}= useAuth()
+  const [showLogin, setShowLogin] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const stock = product.sizes ?? {}
@@ -105,10 +108,21 @@ function ProductView({ product, onAdded }) {
     setStatus('adding')
     setMessage('')
     try {
-      await addToCart({ productId: product._id, size, quantity })
-      onAdded(quantity)
-      setStatus('added')
-      setMessage(`Added ${quantity} × ${size} to your cart.`)
+      if(user){
+        // A 400 (e.g. not enough stock) throws, and the catch below shows the server's message.
+        await axiosInstance.post('/cart/addToCart',{
+          productId:product._id,
+          size:size,
+          quantity:quantity
+        })
+        onAdded(quantity)
+        setStatus('added')
+        setMessage(`Added ${quantity} × ${size} to your cart.`)
+      }
+      else{
+        setShowLogin(true)
+        setStatus('idle')
+      }
     } catch (err) {
       console.log(err)
       setMessage(getErrorMessage(err, "Couldn't add this to your cart. Please try again."))
@@ -239,6 +253,10 @@ function ProductView({ product, onAdded }) {
           </p>
         </form>
       </div>
+
+      <LoginModal open={showLogin} onClose={() => setShowLogin(false)} title="Log in to add to your cart">
+        Your cart is saved to your account, so you'll need to log in or create an account first.
+      </LoginModal>
     </article>
   )
 }

@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { axiosInstance } from '../axiosCalls/axios'
+import { useAuth } from '../context/AuthContext'
 import Logo from './Logo'
 import SearchBar from './SearchBar'
 
@@ -23,10 +24,9 @@ function CartIcon() {
   )
 }
 
-// The cart is visual only until there's a cart API; cartCount just drives the badge.
+// cartCount drives the badge; pages that know the count pass it in.
 function Navbar({ query, onQueryChange, cartCount = 0, logoRef }) {
-  // undefined while /customer/me is loading, null when nobody is logged in
-  const [user, setUser] = useState(undefined)
+  const { user, setUser, loading } = useAuth()
   const navigate = useNavigate()
   const headerRef = useRef(null)
 
@@ -41,24 +41,10 @@ function Navbar({ query, onQueryChange, cartCount = 0, logoRef }) {
     return () => observer.disconnect()
   }, [])
 
-  useEffect(() => {
-    let ignore = false
-    axiosInstance
-      .get('/customer/me')
-      .then((res) => {
-        if (!ignore) setUser(res.data.userData)
-      })
-      .catch(() => {
-        if (!ignore) setUser(null)
-      })
-    return () => {
-      ignore = true
-    }
-  }, [])
-
   async function handleLogout() {
     try {
       await axiosInstance.post('/customer/logout')
+      setUser(null)
       navigate('/login')
     }
     catch (err) {
@@ -92,8 +78,8 @@ function Navbar({ query, onQueryChange, cartCount = 0, logoRef }) {
             Catalogue
           </NavLink>
 
-          <button
-            type="button"
+          <Link
+            to="/cart"
             aria-label={`Cart, ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`}
             className="relative grid h-10 w-10 place-items-center text-paper transition-colors hover:text-crimson-bright"
           >
@@ -104,7 +90,7 @@ function Navbar({ query, onQueryChange, cartCount = 0, logoRef }) {
             >
               {cartCount}
             </span>
-          </button>
+          </Link>
 
           {user && (
             <>
@@ -126,7 +112,7 @@ function Navbar({ query, onQueryChange, cartCount = 0, logoRef }) {
             </>
           )}
 
-          {user === null && (
+          {!loading && !user && (
             <Link to="/login" className="px-2 py-2 text-sm text-mute transition-colors hover:text-paper">
               Log in
             </Link>

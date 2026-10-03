@@ -4,6 +4,7 @@ import { axiosInstance } from '../axiosCalls/axios'
 import Logo from '../components/Logo'
 import Toast from '../components/Toast'
 import { getErrorMessage } from '../utils/getErrorMessage'
+import { useAuth } from '../context/AuthContext'
 
 
 const INITIAL_FORM = {
@@ -23,6 +24,7 @@ function Login() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { setUser } = useAuth()
 
   function handleChange(e) {
     const { name, value } = e.target
@@ -35,6 +37,9 @@ function Login() {
     setSubmitting(true)
     try {
       await axiosInstance.post('/customer/login', form)
+      // The login response has no user data, so ask who's logged in now that the cookie is set.
+      const res = await axiosInstance.get('/customer/me')
+      setUser(res.data.userData)
       navigate('/home')
     }
     catch (err) {

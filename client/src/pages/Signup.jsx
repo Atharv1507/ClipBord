@@ -4,6 +4,7 @@ import { axiosInstance } from '../axiosCalls/axios'
 import Logo from '../components/Logo'
 import Toast from '../components/Toast'
 import { getErrorMessage } from '../utils/getErrorMessage'
+import { useAuth } from '../context/AuthContext'
 
 
 const INITIAL_FORM = {
@@ -25,6 +26,7 @@ function Signup() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const navigate=useNavigate()
+  const { setUser } = useAuth()
   function handleChange(e) {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
@@ -36,7 +38,9 @@ function Signup() {
     setSubmitting(true)
     console.log('signup payload', form)
     try {
-      await axiosInstance.post('/customer/register',form)
+      const res = await axiosInstance.post('/customer/register',form)
+      // Register logs the new customer in and sends them back, so no /customer/me needed.
+      setUser(res.data.data.newCustomer)
       navigate('/home')
     }
     catch (err) {
