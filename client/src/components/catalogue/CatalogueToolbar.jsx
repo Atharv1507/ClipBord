@@ -7,7 +7,7 @@ function Pill({ active, onClick, children }) {
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`h-10 shrink-0 whitespace-nowrap rounded-full px-4 text-sm font-bold transition-colors ${
+      className={`h-10 shrink-0 whitespace-nowrap rounded-full px-4 text-sm transition-colors ${
         active ? 'bg-crimson text-paper' : 'bg-raised text-mute hover:bg-paper/10 hover:text-paper'
       }`}
     >

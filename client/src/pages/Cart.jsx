@@ -16,7 +16,7 @@ function fetchCart() {
   return axiosInstance.get('/cart/getCart').then((res) => res.data.cart)
 }
 
-const labelClass = 'text-xs font-bold uppercase tracking-[0.2em] text-mute'
+const labelClass = 'eyebrow text-mute'
 
 // Stock can drop after something was added, so warn before checkout.
 function stockWarning(item) {
@@ -124,7 +124,7 @@ function Cart() {
       <main className="flex-1" aria-busy={status === 'loading'}>
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:px-6 md:pt-14">
           <div className="flex items-baseline justify-between gap-4">
-            <h1 className="font-display text-5xl tracking-[-0.01em] sm:text-6xl">Your cart</h1>
+            <h1 className="text-5xl tracking-display sm:text-6xl">Your cart</h1>
             {status === 'ready' && !isEmpty && (
               <p className="text-sm text-mute">
                 {cart.count} {cart.count === 1 ? 'item' : 'items'}
@@ -155,7 +155,7 @@ function Cart() {
               <button
                 type="button"
                 onClick={handleRetry}
-                className="mt-6 rounded-md bg-crimson px-5 py-2.5 text-sm font-bold text-paper transition hover:brightness-110"
+                className="mt-6 rounded-md bg-crimson px-5 py-2.5 text-sm text-paper transition hover:brightness-110"
               >
                 Try again
               </button>
@@ -167,7 +167,7 @@ function Cart() {
               <p className="text-lg leading-relaxed text-mute">Log in to see what's in your cart.</p>
               <Link
                 to="/login"
-                className="mt-8 inline-block rounded-md bg-crimson px-8 py-4 font-bold text-paper transition hover:brightness-110"
+                className="mt-8 inline-block rounded-md bg-crimson px-8 py-4 text-paper transition hover:brightness-110"
               >
                 Log in
               </Link>
@@ -179,7 +179,7 @@ function Cart() {
               <p className="text-lg leading-relaxed text-mute">Nothing in here yet.</p>
               <Link
                 to="/catalogue"
-                className="mt-8 inline-block rounded-md bg-crimson px-8 py-4 font-bold text-paper transition hover:brightness-110"
+                className="mt-8 inline-block rounded-md bg-crimson px-8 py-4 text-paper transition hover:brightness-110"
               >
                 Browse the catalogue
               </Link>
@@ -206,7 +206,7 @@ function Cart() {
                           <div className="min-w-0">
                             <Link
                               to={`/product/${item.product._id}`}
-                              className="font-display text-2xl leading-tight text-paper transition-colors hover:text-crimson-bright"
+                              className="tracking-display text-2xl leading-tight text-paper transition-colors hover:text-crimson-bright"
                             >
                               {item.product.name}
                             </Link>
@@ -215,7 +215,7 @@ function Cart() {
                               {formatPrice(item.product.price)} each
                             </p>
                           </div>
-                          <p className="shrink-0 font-bold tabular-nums text-paper">{formatPrice(item.lineTotal)}</p>
+                          <p className="shrink-0 tabular-nums text-paper">{formatPrice(item.lineTotal)}</p>
                         </div>
 
                         <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-4">
@@ -233,7 +233,7 @@ function Cart() {
                             >
                               −
                             </button>
-                            <output aria-live="polite" className="w-7 text-center font-bold tabular-nums text-paper">
+                            <output aria-live="polite" className="w-7 text-center tabular-nums text-paper">
                               {item.quantity}
                             </output>
                             <button
@@ -280,14 +280,14 @@ function Cart() {
                     <dd className="text-mute">At checkout</dd>
                   </div>
                   <div className="mt-3 flex items-baseline justify-between border-t border-raised pt-4">
-                    <dt className="font-bold text-paper">Subtotal</dt>
-                    <dd className="text-2xl font-bold tabular-nums text-paper">{formatPrice(cart.subtotal)}</dd>
+                    <dt className=" text-paper">Subtotal</dt>
+                    <dd className="text-2xl tabular-nums text-paper">{formatPrice(cart.subtotal)}</dd>
                   </div>
                 </dl>
                 <button
                   type="button"
                   disabled={!checkoutReady || hasStockIssue}
-                  className="mt-6 h-12 w-full rounded-md bg-crimson font-bold text-paper transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
+                  className="mt-6 h-12 w-full rounded-md bg-crimson text-paper transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
                 >
                   Checkout
                 </button>

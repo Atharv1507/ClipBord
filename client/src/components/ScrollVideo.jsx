@@ -565,8 +565,8 @@ function ScrollVideo({ src, onSplashDone }) {
             <div className="grid">
               {ACTS.map((item, i) => (
                 <div key={item.eyebrow} aria-hidden={i !== act} className={`${swapClass} ${i === act ? '' : 'translate-y-4 opacity-0'}`}>
-                  <p className="font-mono text-xs uppercase tracking-[0.16em] text-paper/70">{item.eyebrow}</p>
-                  <p className="mt-3 whitespace-pre-line font-display text-[clamp(3rem,8vw,6.75rem)] leading-[0.92] tracking-[-0.015em]">
+                  <p className="eyebrow text-paper/70">{item.eyebrow}</p>
+                  <p className="mt-3 whitespace-pre-line text-[clamp(3rem,8vw,6.75rem)] leading-[0.92] tracking-display">
                     {item.headline}
                   </p>
                 </div>
@@ -583,7 +583,7 @@ function ScrollVideo({ src, onSplashDone }) {
               </div>
               <a
                 href="#products"
-                className="group/cta pointer-events-auto inline-flex w-fit items-center gap-3 rounded-full bg-paper/5 py-1.5 pl-5 pr-1.5 text-sm font-bold ring-1 ring-paper/20 backdrop-blur-md transition-colors [text-shadow:none] hover:bg-paper/10"
+                className="group/cta pointer-events-auto inline-flex w-fit items-center gap-3 rounded-full bg-paper/5 py-1.5 pl-5 pr-1.5 text-sm ring-1 ring-paper/20 backdrop-blur-md transition-colors [text-shadow:none] hover:bg-paper/10"
               >
                 Shop the drop
                 <span className="grid size-8 place-items-center rounded-full bg-crimson transition-transform duration-300 group-hover/cta:rotate-45">
@@ -613,7 +613,7 @@ function ScrollVideo({ src, onSplashDone }) {
           }`}
         >
           <Logo className="w-[min(380px,72vw)] text-paper motion-safe:animate-[splash-logo-in_.9s_cubic-bezier(.2,.7,.2,1)_both]" />
-          <p ref={splashCountRef} className="mt-7 font-mono text-[13px] tracking-[0.1em] text-mute tabular-nums">
+          <p ref={splashCountRef} className="mt-7 text-[14px] text-mute tabular-nums">
             0%
           </p>
           <div className="mt-4 h-0.5 w-44 overflow-hidden rounded-full bg-paper/15">

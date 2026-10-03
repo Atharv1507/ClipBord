@@ -26,7 +26,7 @@ function Footer() {
             <p className="text-mute">Sizing, an order or a collab idea? Write to us.</p>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="mt-3 inline-block break-words text-[clamp(1.75rem,5.5vw,3.25rem)] font-bold leading-tight tracking-[-0.03em] text-paper underline decoration-crimson-bright decoration-2 underline-offset-[0.2em] transition-colors hover:text-crimson-bright"
+              className="mt-3 inline-block break-words text-[clamp(1.75rem,5.5vw,3.25rem)] leading-tight tracking-display text-paper underline decoration-crimson-bright decoration-2 underline-offset-[0.2em] transition-colors hover:text-crimson-bright"
             >
               {CONTACT_EMAIL}
             </a>

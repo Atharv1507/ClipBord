@@ -24,7 +24,7 @@ function FilterSection({ title, children }) {
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
           aria-controls={bodyId}
-          className="flex w-full items-center justify-between gap-3 rounded-md py-1 text-left font-bold tracking-[-0.01em] text-paper"
+          className="flex w-full items-center justify-between gap-3 rounded-md py-1 text-left text-paper"
         >
           {title}
           <span className="grid h-7 w-7 place-items-center rounded-full text-mute transition-colors hover:bg-paper/10 hover:text-paper">
@@ -171,11 +171,11 @@ function FilterPanel({ filters, facets, activeCount, onToggle, onPrice, onClear,
     <div>
       <div className="flex items-center gap-2.5 px-5 py-4">
         <SlidersIcon />
-        <h2 id={titleId} className="font-bold tracking-[-0.01em]">
+        <h2 id={titleId} className="">
           Filter
         </h2>
         {activeCount > 0 && (
-          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-crimson px-1.5 text-[11px] font-bold text-paper">
+          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-crimson px-1.5 text-[12px] text-paper">
             {activeCount}
             <span className="sr-only"> active</span>
           </span>

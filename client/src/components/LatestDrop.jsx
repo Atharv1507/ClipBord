@@ -15,7 +15,7 @@ function LatestDrop({ query = '', onClearQuery }) {
     <section id="products" aria-busy={status === 'loading' || searching} className="flex-1 scroll-mt-20 bg-ink">
       <div className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 sm:pt-20">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
-          <h2 className="font-display text-5xl tracking-[-0.01em] sm:text-6xl">The drop</h2>
+          <h2 className="text-5xl tracking-display sm:text-6xl">The drop</h2>
           <div className="flex items-baseline gap-5">
             {status === 'ready' && (
               <p className="flex items-center gap-2 text-sm text-mute" aria-live="polite">
@@ -31,7 +31,7 @@ function LatestDrop({ query = '', onClearQuery }) {
             )}
             <Link
               to="/catalogue"
-              className="text-sm font-bold text-paper underline decoration-crimson-bright decoration-2 underline-offset-4 transition-colors hover:text-crimson-bright"
+              className="text-sm text-paper underline decoration-crimson-bright decoration-2 underline-offset-4 transition-colors hover:text-crimson-bright"
             >
               See the full catalogue
             </Link>

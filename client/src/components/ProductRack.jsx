@@ -18,7 +18,7 @@ function ProductRack({ products = [], placeholders = 0 }) {
         {Array.from({ length: placeholders }, (_, i) => (
           <li key={i} className="@container relative">
             <Rail />
-            <div className="mx-auto mt-10 aspect-[1/2.2] max-w-sm @min-[15rem]:aspect-[1/2] rounded-b-2xl bg-raised [clip-path:polygon(22%_0,78%_0,100%_44px,100%_100%,0_100%,0_44px)] motion-safe:animate-pulse" />
+            <div className="mx-auto mt-10 aspect-[1/1.73] max-w-sm @min-[15rem]:aspect-[1/1.56] rounded-b-2xl bg-raised [clip-path:polygon(22%_0,78%_0,100%_44px,100%_100%,0_100%,0_44px)] motion-safe:animate-pulse" />
           </li>
         ))}
       </ul>

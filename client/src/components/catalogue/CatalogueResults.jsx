@@ -18,7 +18,7 @@ function CatalogueResults({ results, query, hasFilters, onClearQuery, onClearAll
         <button
           type="button"
           onClick={retry}
-          className="mt-6 rounded-md bg-crimson px-5 py-2.5 text-sm font-bold text-paper transition hover:brightness-110"
+          className="mt-6 rounded-md bg-crimson px-5 py-2.5 text-sm text-paper transition hover:brightness-110"
         >
           Try again
         </button>

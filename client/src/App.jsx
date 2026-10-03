@@ -8,6 +8,7 @@ import About from './pages/About'
 import Catalogue from './pages/Catalogue'
 import NotFound from './pages/NotFound'
 import Cart from './pages/Cart'
+import Wishlist from './pages/Wishlist'
 import { AuthProvider } from './context/AuthContext'
 import PublicRoute from './components/PublicRoute'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -24,6 +25,7 @@ function App() {
         <Route path='/about' element={<About/>}/>
         <Route path='/catalogue' element={<Catalogue/>}/>
         <Route path='/cart' element={<ProtectedRoute><Cart/></ProtectedRoute>}/>
+        <Route path='/wishlist' element={<ProtectedRoute><Wishlist/></ProtectedRoute>}/>
         <Route path='*' element={<NotFound/>}/>
     </Routes>
     </BrowserRouter>

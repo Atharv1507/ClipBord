@@ -10,8 +10,8 @@ function NotFound() {
       <Navbar />
       <main className="flex flex-1 items-center">
         <div className="mx-auto w-full max-w-7xl px-4 py-24 sm:px-6">
-          <p className="text-sm tracking-[0.2em] text-crimson-bright">404</p>
-          <h1 className="mt-4 font-display text-5xl tracking-[-0.01em] sm:text-7xl">
+          <p className="eyebrow text-crimson-bright">404</p>
+          <h1 className="mt-4 text-5xl tracking-display sm:text-7xl">
             This page isn’t on the list.
           </h1>
           <p className="mt-6 max-w-[50ch] text-lg leading-relaxed text-mute">
@@ -21,13 +21,13 @@ function NotFound() {
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
               to="/home"
-              className="rounded-md bg-crimson px-8 py-4 font-bold text-paper transition hover:brightness-110"
+              className="rounded-md bg-crimson px-8 py-4 text-paper transition hover:brightness-110"
             >
               Back to home
             </Link>
             <Link
               to="/catalogue"
-              className="rounded-md bg-smoke px-8 py-4 font-bold text-paper transition-colors hover:bg-raised"
+              className="rounded-md bg-smoke px-8 py-4 text-paper transition-colors hover:bg-raised"
             >
               Browse the catalogue
             </Link>

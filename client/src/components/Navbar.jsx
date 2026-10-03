@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { axiosInstance } from '../axiosCalls/axios'
 import { useAuth } from '../context/AuthContext'
+import BookmarkIcon from './BookmarkIcon'
 import Logo from './Logo'
 import SearchBar from './SearchBar'
 
@@ -78,6 +79,14 @@ function Navbar({ query, onQueryChange, cartCount = 0, logoRef }) {
             Catalogue
           </NavLink>
 
+          <NavLink
+            to="/wishlist"
+            aria-label="Wishlist"
+            className="grid h-10 w-10 place-items-center text-paper transition-colors hover:text-crimson-bright"
+          >
+            {({ isActive }) => <BookmarkIcon className={`h-6 w-6 ${isActive ? 'fill-current' : 'fill-none'}`} />}
+          </NavLink>
+
           <Link
             to="/cart"
             aria-label={`Cart, ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`}
@@ -86,7 +95,7 @@ function Navbar({ query, onQueryChange, cartCount = 0, logoRef }) {
             <CartIcon />
             <span
               aria-hidden="true"
-              className="absolute right-0 top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-crimson px-1 text-[11px] font-bold text-paper"
+              className="absolute right-0 top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-crimson px-1 text-[12px] text-paper"
             >
               {cartCount}
             </span>
@@ -98,7 +107,7 @@ function Navbar({ query, onQueryChange, cartCount = 0, logoRef }) {
                 role="img"
                 aria-label={`Logged in as ${user.fullName}`}
                 title={user.fullName}
-                className="grid h-9 w-9 place-items-center rounded-full bg-raised text-sm font-bold text-paper"
+                className="grid h-9 w-9 place-items-center rounded-full bg-raised text-sm text-paper"
               >
                 {getInitials(user.fullName)}
               </span>

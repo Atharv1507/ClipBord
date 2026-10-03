@@ -15,11 +15,32 @@
   --color-crimson: #b3122e;
   --color-crimson-bright: #e0475c;
 
-  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
-  /* Headlines, product names and the tag wordmark: a flared, high-contrast face that
-     echoes the logo. Forum has one weight, so pair font-display with font-normal, never bold.
-     It has no rupee sign, so prices stay in font-sans. */
-  --font-display: "Forum", ui-serif, Georgia, serif;
+  /* Type system: one face, Forum, everywhere. It has a single weight, so hierarchy comes
+     from size, color, case and spacing, never weight (font-synthesis is off so nothing
+     fakes a bold). Forum has no rupee sign; Noto Serif supplies just that glyph.
+     - Headlines and product names get tracking-display.
+     - eyebrow: the one small-caps label style (section labels, kickers). */
+  --font-serif: "Forum", "Noto Serif", ui-serif, Georgia, serif;
+  --default-font-family: var(--font-serif);
+  --tracking-display: -0.01em;
+  /* Forum has one weight; this outline (in each element's own text color) thickens it.
+     In em, so every size gains the same proportion. Raise it for heavier type. */
+  --text-weight: 0.02em;
+  /* Forum runs small, so the text steps sit 1px above Tailwind's defaults.
+     Headline sizes (3xl and up) are unchanged. */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.3125rem;
+  --text-2xl: 1.5625rem;
+}
+
+@utility eyebrow {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
 }
 
 @layer base {
@@ -27,8 +48,14 @@
     color-scheme: dark;
     background-color: var(--color-ink);
     color: var(--color-paper);
+    font-synthesis-weight: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Set per element, not inherited from html, so the em resolves at each text size. */
+  *, ::before, ::after, ::placeholder {
+    -webkit-text-stroke-width: var(--text-weight);
   }
 
   ::selection {

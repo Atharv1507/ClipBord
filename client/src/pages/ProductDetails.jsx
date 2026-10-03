@@ -76,7 +76,7 @@ function ProductDetails() {
                 <button
                   type="button"
                   onClick={handleRetry}
-                  className="rounded-md bg-crimson px-5 py-2.5 text-sm font-bold text-paper transition hover:brightness-110"
+                  className="rounded-md bg-crimson px-5 py-2.5 text-sm text-paper transition hover:brightness-110"
                 >
                   Try again
                 </button>

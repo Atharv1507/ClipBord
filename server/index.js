@@ -6,6 +6,7 @@ import customerRouter from "./routes/customer.route.js"
 import cors from 'cors'
 import productRoutes from "./routes/product.routes.js"
 import cartRoutes from "./routes/cart.routes.js"
+import wishlistRoutes from "./routes/wishlist.routes.js"
 
 dotenv.config()
 const app=express()
@@ -27,6 +28,7 @@ app.use(cookieParser())
 app.use('/customer',customerRouter)
 app.use('/products',productRoutes)
 app.use('/cart',cartRoutes)
+app.use('/wishlist',wishlistRoutes)
 
 app.get('/health',(req,res)=>{
     // readyState 1 = connected

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { axiosInstance } from '../axiosCalls/axios'
+import { clearWishlist, loadWishlist } from '../hooks/useWishlist'
 
 const AuthContext = createContext()
 
@@ -20,6 +21,14 @@ export const AuthProvider = ({ children }) => {
         setLoading(false)
       })
   }, [])
+
+  // Covers app load, login, signup and logout: whenever the logged-in customer
+  // changes, fetch their wishlist, or empty it when nobody is logged in.
+  const userId = user?._id
+  useEffect(() => {
+    if (userId) loadWishlist()
+    else clearWishlist()
+  }, [userId])
 
   return (
     <AuthContext.Provider value={{ user, setUser, loading }}>

@@ -23,7 +23,7 @@ function Arrow({ flip = false }) {
 
 function CountBadge({ count, className = '' }) {
   return (
-    <span aria-hidden="true" className={`grid h-5 min-w-5 place-items-center rounded-full bg-crimson px-1.5 text-[11px] font-bold text-paper ${className}`}>
+    <span aria-hidden="true" className={`grid h-5 min-w-5 place-items-center rounded-full bg-crimson px-1.5 text-[12px] text-paper ${className}`}>
       {count}
     </span>
   )
@@ -115,7 +115,7 @@ function Catalogue() {
         <div className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 sm:pt-14">
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <h1 className="font-display text-5xl tracking-[-0.01em] sm:text-6xl">Catalogue</h1>
+              <h1 className="text-5xl tracking-display sm:text-6xl">Catalogue</h1>
               {status === 'ready' && (
                 <p className="flex items-center gap-2 text-sm text-mute" aria-live="polite">
                   {searching ? (
@@ -135,7 +135,7 @@ function Catalogue() {
               onClick={() => setDrawerOpen(true)}
               aria-haspopup="dialog"
               aria-expanded={drawerOpen}
-              className="flex h-11 items-center gap-2 rounded-full bg-raised px-4 text-sm font-bold text-paper transition-colors hover:bg-paper/10 lg:hidden"
+              className="flex h-11 items-center gap-2 rounded-full bg-raised px-4 text-sm text-paper transition-colors hover:bg-paper/10 lg:hidden"
             >
               <SlidersIcon className="h-[18px] w-[18px]" />
               Filters
@@ -212,7 +212,7 @@ function Catalogue() {
                     <Arrow />
                   </button>
                   <p className="min-w-28 text-center text-sm tabular-nums text-mute">
-                    Page <span className="font-bold text-paper">{page}</span> of {totalPages}
+                    Page <span className=" text-paper">{page}</span> of {totalPages}
                   </p>
                   <button type="button" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} aria-label="Next page" className={pageButtonClass}>
                     <Arrow flip />
@@ -233,7 +233,7 @@ function Catalogue() {
           <button
             type="button"
             onClick={closeDrawer}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-crimson text-sm font-bold text-paper transition hover:brightness-110"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-crimson text-sm text-paper transition hover:brightness-110"
           >
             {status === 'ready' && searching ? <Spinner /> : null}
             {status === 'ready' ? `Show ${countText}` : 'Show results'}

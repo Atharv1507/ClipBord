@@ -22,7 +22,7 @@ function Toast({ message, onClose, duration = 4000 }) {
       className="fixed inset-x-0 top-6 z-50 flex justify-center px-6"
     >
       <div className="flex w-full max-w-sm items-start justify-between gap-4 rounded-md bg-raised px-5 py-4 text-paper shadow-lg shadow-black/50">
-        <p className="text-[13px] leading-relaxed">{message}</p>
+        <p className="text-[14px] leading-relaxed">{message}</p>
         <button
           type="button"
           onClick={onClose}

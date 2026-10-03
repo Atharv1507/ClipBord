@@ -6,7 +6,7 @@ import { useSmoothScroll } from '../hooks/useSmoothScroll'
 import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../utils/contact'
 
 const sectionClass = 'scroll-mt-24 border-t border-paper/10 py-14 first-of-type:border-t-0 sm:py-20'
-const headingClass = 'font-display text-5xl tracking-[-0.01em] sm:text-6xl'
+const headingClass = 'text-5xl tracking-display sm:text-6xl'
 const bodyClass = 'mt-6 max-w-[60ch] text-lg leading-relaxed text-mute'
 const inlineLinkClass =
   'text-paper underline decoration-crimson-bright underline-offset-4 transition-colors hover:text-crimson-bright'

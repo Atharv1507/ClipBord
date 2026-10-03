@@ -13,7 +13,7 @@ const INITIAL_FORM = {
 }
 
 const fieldClass =
-  'w-full rounded-md bg-smoke px-4 py-3 text-[15px] text-paper placeholder:text-neutral-500 transition-colors outline-none focus:bg-raised'
+  'w-full rounded-md bg-smoke px-4 py-3 text-base text-paper placeholder:text-neutral-500 transition-colors outline-none focus:bg-raised'
 
 const labelClass =
   'mb-2 block text-sm text-mute'
@@ -60,7 +60,7 @@ function Login() {
           <Link to="/home" className="inline-block text-paper transition-colors hover:text-crimson-bright">
             <Logo className="h-14" />
           </Link>
-          <h1 className="mt-8 font-display text-4xl leading-tight">
+          <h1 className="mt-8 tracking-display text-4xl leading-tight">
             Welcome back
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-mute">
@@ -115,7 +115,7 @@ function Login() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-md bg-crimson py-4 font-bold text-paper transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-md bg-crimson py-4 text-paper transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {submitting ? 'Logging in' : 'Log in'}
           </button>

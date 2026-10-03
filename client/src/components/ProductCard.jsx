@@ -1,40 +1,60 @@
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { useSwing } from '../hooks/useSwing'
 import { useWishlist } from '../hooks/useWishlist'
-import { CATEGORY_LABELS, formatPrice } from '../utils/product'
+import { getErrorMessage } from '../utils/getErrorMessage'
+import { formatPrice } from '../utils/product'
+import LoginModal from './LoginModal'
+import BookmarkIcon from './BookmarkIcon'
 import Monogram from './Monogram'
-
-function HeartIcon() {
-  return (
-    <svg viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-5 w-5 fill-none stroke-current transition-transform duration-200 group-aria-pressed/heart:scale-110 group-aria-pressed/heart:fill-crimson-bright group-aria-pressed/heart:stroke-crimson-bright">
-      <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" />
-    </svg>
-  )
-}
-
-function ArrowIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 transition-transform duration-300 group-hover/view:translate-x-1 @min-[15rem]:h-5 @min-[15rem]:w-5">
-      <path d="M5 12h14M13 6l6 6-6 6" />
-    </svg>
-  )
-}
+import Toast from './Toast'
 
 // The tag's outline: the top corners cut off either side of the eyelet. The crimson layer
-// is cut to this shape and the black face sits 1.5px inside it, so a crimson foil line
-// traces the edge. The face's corners move in a touch so the line keeps its width on the diagonals.
+// is cut to this shape and the face sits 1.5px inside it, so a crimson foil line traces
+// the edge. The face's corners move in a touch so the line keeps its width on the diagonals.
 const tagShape = '[clip-path:polygon(22%_0,78%_0,100%_44px,100%_100%,0_100%,0_44px)]'
 const faceShape = '[clip-path:polygon(calc(22%_+_0.6px)_0,calc(78%_-_0.6px)_0,100%_44.4px,100%_100%,0_100%,0_44.4px)]'
 
-// A product as a black swing tag edged in crimson foil, hung from the rail by a crimson
-// loop: the CB monogram and category, the photo, then the style name and price. Hovering
-// swings it on its string. "View" opens the product page and the heart saves it to the wishlist.
+// The perforation between the cream body and the black stub has a notch at each end, cut
+// by a mask on the crimson layer so it bites through the foil too. The seam sits below the
+// photo (1.1 × the face width) and the name strip (--cap), so it's worked out from the
+// card's width (cqw) and the notches land on it at every size.
+const notchMask = 'radial-gradient(circle 7px at 0 var(--seam), #0000 98%, #000), radial-gradient(circle 7px at 100% var(--seam), #0000 98%, #000)'
+const notchStyle = {
+  '--seam': 'calc(1.5px + (100cqw - 3px) * 1.1 + var(--cap))',
+  maskImage: notchMask,
+  WebkitMaskImage: notchMask,
+  maskComposite: 'intersect',
+  WebkitMaskComposite: 'source-in',
+}
+
+// A product as a swing tag edged in crimson foil, hung from the rail by a crimson loop.
+// The cream body carries the photo with the style name printed under it; below a notched
+// perforation, a slim black stub holds the CB monogram, the price and the bookmark.
+// Hovering swings it on its string. The photo and name open the product page, and the
+// bookmark saves it to the wishlist.
 function ProductCard({ product }) {
-  const { _id, name, price, image, category } = product
+  const { _id, name, price, image } = product
   const { areaRef, swingRef } = useSwing()
-  const wishlist = useWishlist()
-  const saved = wishlist.has(_id)
+  const { saved, toggle } = useWishlist(_id)
+  const { user } = useAuth()
+  const [showLogin, setShowLogin] = useState(false)
+  const [error, setError] = useState('')
   const href = `/product/${_id}`
+
+  async function handleBookmarkClick() {
+    if (!user) {
+      setShowLogin(true)
+      return
+    }
+    try {
+      await toggle()
+    } catch (err) {
+      setError(getErrorMessage(err, "Couldn't update your wishlist. Please try again."))
+    }
+  }
 
   return (
     <article ref={areaRef} className="group @container relative mx-auto max-w-sm select-none">
@@ -44,60 +64,69 @@ function ProductCard({ product }) {
           <path d="M8 62 L7.2 7 Q10 -2.2 12.8 7 L12 62" fill="none" stroke="var(--color-crimson)" strokeWidth="1.75" strokeLinecap="round" />
         </svg>
 
-        <div className={`rounded-b-2xl bg-crimson p-[1.5px] ${tagShape}`}>
-          <div className={`relative rounded-b-[15px] bg-smoke px-2.5 pb-3 pt-10 text-paper @min-[15rem]:px-4 @min-[15rem]:pb-[18px] ${faceShape}`}>
-            {/* The eyelet, ringed by a crimson grommet. */}
-            <span aria-hidden="true" className="absolute left-1/2 top-3.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-ink shadow-[0_0_0_3px_var(--color-crimson),0_0_0_5px_var(--color-smoke),0_0_0_6px_rgb(179_18_46/0.45)]" />
+        {/* --cap is the name strip's height: two lines of the name plus a little air. */}
+        <div style={notchStyle} className={`rounded-b-2xl bg-crimson p-[1.5px] [--cap:52px] @min-[15rem]:[--cap:64px] ${tagShape}`}>
+          <div className={`relative rounded-b-[15px] bg-smoke ${faceShape}`}>
+            <div className="relative bg-paper-dim text-ink">
+              {/* The eyelet, ringed by a crimson grommet. */}
+              <span aria-hidden="true" className="absolute left-1/2 top-3.5 z-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-ink shadow-[0_0_0_3px_var(--color-crimson),0_0_0_5px_var(--color-paper-dim),0_0_0_6px_rgb(179_18_46/0.45)]" />
 
-            <div className="flex items-center justify-between gap-2 @min-[15rem]:gap-3">
-              <Monogram className="h-7 shrink-0 @min-[15rem]:h-9" />
-              {category && (
-                <span className="truncate text-[11px] text-mute @min-[15rem]:text-[13px]">{CATEGORY_LABELS[category] ?? category}</span>
-              )}
-            </div>
-
-            {/* The name and View link carry the product page for keyboards and screen readers. */}
-            <Link to={href} tabIndex={-1} aria-hidden="true" className="relative mt-2.5 block aspect-[1/0.9] @min-[15rem]:mt-3 overflow-hidden rounded-lg bg-paper-dim">
-              {/* The catalog photos (4:5) print the product name along the bottom. This window
-                  shows the band from 10% to 82% of the photo: the whole garment, not the name. */}
-              <img
-                src={image}
-                alt=""
-                loading="lazy"
-                draggable="false"
-                className="absolute inset-x-0 -top-[14%] aspect-[4/5] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-              />
-            </Link>
-
-            <h3 className="mt-3 line-clamp-2 min-h-[2lh] font-display text-lg leading-[1.12] text-balance @min-[15rem]:mt-[18px] @min-[15rem]:text-[26px]">{name}</h3>
-
-            <div className="mt-2.5 border-t border-paper/10 pt-2.5 @min-[15rem]:mt-3.5 @min-[15rem]:pt-3.5">
-              <p className="text-lg font-semibold leading-tight @min-[15rem]:text-[26px] tracking-[-0.01em] text-crimson-bright tabular-nums">{formatPrice(price)}</p>
-              <p className="mt-0.5 text-[10px] text-mute @min-[15rem]:text-xs">Incl. of all taxes</p>
-            </div>
-
-            <div className="mt-3 flex gap-1.5 @min-[15rem]:mt-4 @min-[15rem]:gap-2">
-              <Link
-                to={href}
-                aria-label={`View ${name}`}
-                className="group/view flex flex-1 items-center justify-between rounded-[10px] bg-crimson px-3 py-2.5 text-sm font-semibold text-paper transition hover:brightness-110 @min-[15rem]:px-4 @min-[15rem]:py-3 @min-[15rem]:text-base"
-              >
-                View
-                <ArrowIcon />
+              {/* The name link carries the product page for keyboards and screen readers. */}
+              <Link to={href} tabIndex={-1} aria-hidden="true" className="flex aspect-[1/1.1] flex-col justify-end overflow-hidden">
+                {/* The catalog photos (4:5) print the product name along the bottom. The photo
+                    is pinned to the bottom of this window with its last 22% (of the width) cut
+                    off, so it shows the band down to 82% of the photo: the whole garment, not
+                    the name. The photo's own cream ground matches the tag's. */}
+                <img
+                  src={image}
+                  alt=""
+                  loading="lazy"
+                  draggable="false"
+                  className="-mb-[22%] aspect-[4/5] w-full shrink-0 transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                />
               </Link>
+
+              <div className="h-(--cap) overflow-hidden px-3 pt-0.5 @min-[15rem]:px-4">
+                <h3 className="line-clamp-2 tracking-display text-lg leading-[1.12] text-balance @min-[15rem]:text-[22px]">
+                  <Link to={href}>{name}</Link>
+                </h3>
+              </div>
+
+              {/* The perforation, punched along the bottom edge of the cream. */}
+              <span aria-hidden="true" className="absolute inset-x-3 -bottom-px h-0.5 bg-[radial-gradient(circle,var(--color-smoke)_0_1.1px,transparent_1.5px)] bg-size-[7px_2px] bg-position-[0_50%] bg-repeat-x" />
+            </div>
+
+            <div className="flex items-center gap-2.5 px-3 py-2.5 text-paper @min-[15rem]:gap-3 @min-[15rem]:px-4 @min-[15rem]:py-3">
+              <Monogram label="" className="h-[26px] shrink-0 @min-[15rem]:h-8" />
+              <span aria-hidden="true" className="my-0.5 w-px shrink-0 self-stretch bg-paper/15" />
+              <div className="min-w-0">
+                <p className="text-base leading-tight text-crimson-bright tabular-nums @min-[15rem]:text-xl">{formatPrice(price)}</p>
+                {/* No room beside the monogram on phones. */}
+                <p className="mt-0.5 hidden text-xs text-mute @min-[15rem]:block">Incl. of all taxes</p>
+              </div>
               <button
                 type="button"
-                onClick={() => wishlist.toggle(_id)}
+                onClick={handleBookmarkClick}
                 aria-pressed={saved}
                 aria-label={`Save ${name} to wishlist`}
-                className="group/heart grid w-10 shrink-0 @min-[15rem]:w-12 place-items-center rounded-[10px] text-paper ring-[1.5px] ring-paper/20 ring-inset transition-colors hover:bg-paper/5"
+                className="group/bookmark ml-auto grid size-9 shrink-0 place-items-center rounded-[10px] text-paper ring-[1.5px] ring-paper/20 ring-inset transition-colors hover:bg-paper/5 @min-[15rem]:size-[42px]"
               >
-                <HeartIcon />
+                <BookmarkIcon className="h-5 w-5 fill-none transition-transform duration-200 group-aria-pressed/bookmark:scale-110 group-aria-pressed/bookmark:fill-crimson-bright group-aria-pressed/bookmark:stroke-crimson-bright" />
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Only mounted when needed, so a page of cards doesn't hold a dialog each. */}
+      {showLogin && (
+        <LoginModal open onClose={() => setShowLogin(false)} title="Log in to save to your wishlist">
+          Your wishlist is saved to your account, so you'll need to log in or create an account first.
+        </LoginModal>
+      )}
+      {/* The card's swing transform and container query would pin a fixed toast to the card,
+          so it renders on <body> instead. */}
+      {error && createPortal(<Toast message={error} onClose={() => setError('')} />, document.body)}
     </article>
   )
 }

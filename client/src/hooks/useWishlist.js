@@ -1,38 +1,57 @@
 import { useSyncExternalStore } from 'react'
+import { axiosInstance } from '../axiosCalls/axios'
 
-// Wishlisted product ids, shared by every card on the page and kept in this browser.
-// TODO: once the server has a wishlist route (e.g. GET/POST /wishlist for the logged-in
-// customer), load and save through it instead of localStorage.
-const STORAGE_KEY = 'clipboard:wishlist'
+// Wishlisted product ids for the logged-in customer, shared by every card on the page.
+// AuthContext fills it on login and clears it on logout; cards only read and toggle.
 const listeners = new Set()
-let saved = load()
-
-function load() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [])
-  } catch {
-    return new Set()
-  }
-}
+let savedIds = new Set()
 
 function subscribe(listener) {
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
 
-function toggle(id) {
-  saved = new Set(saved)
-  if (saved.has(id)) saved.delete(id)
-  else saved.add(id)
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...saved]))
-  } catch {
-    // Storage is blocked (private mode): the wishlist still works until the page closes.
-  }
+function setSavedIds(updatedIds) {
+  savedIds = updatedIds
   listeners.forEach((listener) => listener())
 }
 
-export function useWishlist() {
-  const current = useSyncExternalStore(subscribe, () => saved)
-  return { has: (id) => current.has(id), toggle }
+export async function loadWishlist() {
+  try {
+    const res = await axiosInstance.get('/wishlist/ids')
+    setSavedIds(new Set(res.data.ids))
+  } catch {
+    setSavedIds(new Set())
+  }
+}
+
+export function clearWishlist() {
+  setSavedIds(new Set())
+}
+
+// Fills or empties the bookmark straight away, then tells the server. If the server refuses,
+// the bookmark flips back and the error goes to the caller to show.
+async function toggle(id) {
+  const wasSaved = savedIds.has(id)
+  const flip = (add) => {
+    const updatedIds = new Set(savedIds)
+    if (add) updatedIds.add(id)
+    else updatedIds.delete(id)
+    setSavedIds(updatedIds)
+  }
+
+  flip(!wasSaved)
+  try {
+    await axiosInstance.post(wasSaved ? '/wishlist/remove' : '/wishlist/add', { productId: id })
+  } catch (err) {
+    flip(wasSaved)
+    throw err
+  }
+}
+
+// Each card reads only its own true/false, so toggling one bookmark
+// re-renders that card alone.
+export function useWishlist(id) {
+  const saved = useSyncExternalStore(subscribe, () => savedIds.has(id))
+  return { saved, toggle: () => toggle(id) }
 }
