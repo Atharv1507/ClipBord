@@ -1,305 +1,149 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Toast from '../components/Toast'
-import { axiosInstance } from '../axiosCalls/axios'
-import { getErrorMessage } from '../utils/getErrorMessage'
+import { Icon } from '../components/Icons'
+import { panelClass, pillButton } from '../components/ProductResults'
+import { stockWarning, useBag } from '../context/bag'
 import { useSmoothScroll } from '../hooks/useSmoothScroll'
-import { CATEGORY_LABELS, formatPrice } from '../utils/product'
+import { CATEGORY_LABELS, formatPrice, plural } from '../utils/product'
 
-const EMPTY_CART = { items: [], count: 0, subtotal: 0 }
+const gutter = 'px-4 md:px-[clamp(16px,2.2vw,32px)]'
 
-// The full cart: items with product name, price and stock, plus count and subtotal.
-// addToCart and removeFromCart only send back product ids, so this is what the page shows.
-function fetchCart() {
-  return axiosInstance.get('/cart/getCart').then((res) => res.data.cart)
-}
-
-const labelClass = 'eyebrow text-mute'
-
-// Stock can drop after something was added, so warn before checkout.
-function stockWarning(item) {
-  if (item.available === 0) return `Sold out in ${item.size}. Remove it to check out.`
-  if (item.available < item.quantity) {
-    return `Only ${item.available} left in ${item.size}. Lower the quantity to check out.`
-  }
-  return ''
-}
-
+// The bag as a full page: every line with its quantity, and the summary beside it.
+// Shares its state with the bag drawer (BagContext), so both always agree.
 function Cart() {
-  const [cart, setCart] = useState(EMPTY_CART)
-  const [status, setStatus] = useState('loading') // 'loading' | 'ready' | 'error' | 'loggedOut'
-  const [error, setError] = useState('')
-  // The item whose buttons are waiting on the server, so they can't be double-clicked.
-  const [busyId, setBusyId] = useState(null)
-  // Shown in a toast when an update fails, e.g. "Only 2 left in size M".
-  const [message, setMessage] = useState('')
+  const { cart, status, error, setError, retry, busyId, increase, decrease, remove } = useBag()
   useSmoothScroll()
 
   useEffect(() => {
-    document.title = 'Cart · Clipbord'
+    document.title = 'Bag · Clipbord'
     return () => {
       document.title = 'Clipbord'
     }
   }, [])
 
-  // Bumping this runs the effect below again; the Try again button uses it.
-  const [attempt, setAttempt] = useState(0)
-
-  useEffect(() => {
-    let ignore = false
-    fetchCart()
-      .then((data) => {
-        if (ignore) return
-        setCart(data)
-        setStatus('ready')
-      })
-      .catch((err) => {
-        if (ignore) return
-        console.log(err)
-        if (err.response?.status === 401) {
-          setStatus('loggedOut')
-        } else {
-          setError(getErrorMessage(err, "Couldn't load your cart. Please try again."))
-          setStatus('error')
-        }
-      })
-    return () => {
-      ignore = true
-    }
-  }, [attempt])
-
-  function handleRetry() {
-    setStatus('loading')
-    setAttempt((n) => n + 1)
-  }
-
-  // Runs one change against the server, then loads the cart again so the page shows
-  // the new quantities and totals. The item's buttons stay disabled until both finish.
-  async function updateItem(item, request) {
-    setBusyId(item._id)
-    try {
-      await request()
-      setCart(await fetchCart())
-    } catch (err) {
-      console.log(err)
-      // The login can run out while the page is open.
-      if (err.response?.status === 401) setStatus('loggedOut')
-      else setMessage(getErrorMessage(err, "Couldn't update your cart. Please try again."))
-    } finally {
-      setBusyId(null)
-    }
-  }
-
-  function increase(item) {
-    // A 400 "Only 2 left in size M" from the server ends up in the toast.
-    updateItem(item, () =>
-      axiosInstance.post('/cart/addToCart', { productId: item.product._id, size: item.size, quantity: 1 }),
-    )
-  }
-
-  function decrease(item) {
-    // Takes one away; the server drops the item once it reaches 0.
-    updateItem(item, () =>
-      axiosInstance.post('/cart/removeFromCart', { productId: item.product._id, size: item.size }),
-    )
-  }
-
-  function removeItem(item) {
-    updateItem(item, () => axiosInstance.post('/cart/removeItem', { itemId: item._id }))
-  }
-
-  // TODO 5 (later): checkout needs the orders model and route. Until then the button stays disabled.
+  // TODO (later): checkout needs the orders model and route. Until then the button stays disabled.
   const checkoutReady = false
-
   const hasStockIssue = cart.items.some((item) => stockWarning(item))
   const isEmpty = status === 'ready' && cart.items.length === 0
 
   return (
     <div id="top" className="flex min-h-screen flex-col">
-      <Navbar cartCount={cart.count} />
-      <Toast message={message} onClose={() => setMessage('')} />
+      <Navbar />
+      {cart.items.length > 0 && <Toast message={error} onClose={() => setError('')} />}
 
       <main className="flex-1" aria-busy={status === 'loading'}>
-        <div className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:px-6 md:pt-14">
-          <div className="flex items-baseline justify-between gap-4">
-            <h1 className="text-5xl tracking-display sm:text-6xl">Your cart</h1>
-            {status === 'ready' && !isEmpty && (
-              <p className="text-sm text-mute">
-                {cart.count} {cart.count === 1 ? 'item' : 'items'}
-              </p>
+        <header className={`${gutter} pb-7 pt-[clamp(36px,5vw,72px)]`}>
+          <h1 className="display text-[clamp(64px,13vw,220px)]">
+            Bag
+            {cart.count > 0 && (
+              <sup className="relative top-[.6em] ml-[.3em] align-top font-sans text-[clamp(14px,1.3vw,18px)] font-medium tracking-normal text-fg-soft">
+                {plural(cart.count, 'item')}
+              </sup>
             )}
-          </div>
+          </h1>
+        </header>
 
-          {status === 'loading' && (
-            <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]" aria-hidden="true">
+        <div className={gutter}>
+          {(status === 'loading' || status === 'idle') && (
+            <div className="grid gap-10 lg:grid-cols-[1fr_380px]" aria-hidden="true">
               <div className="flex flex-col gap-6">
                 {[0, 1].map((n) => (
-                  <div key={n} className="flex gap-4 sm:gap-6">
-                    <div className="aspect-[4/5] w-24 shrink-0 rounded-md bg-raised motion-safe:animate-pulse sm:w-32" />
+                  <div key={n} className="flex gap-5">
+                    <div className="aspect-[4/5] w-28 shrink-0 rounded-inner bg-photo motion-safe:animate-pulse sm:w-36" />
                     <div className="flex flex-1 flex-col gap-3 pt-1">
-                      <div className="h-6 w-3/5 rounded-md bg-raised motion-safe:animate-pulse" />
-                      <div className="h-4 w-2/5 rounded-md bg-raised motion-safe:animate-pulse" />
+                      <div className="h-6 w-3/5 rounded-full bg-photo motion-safe:animate-pulse" />
+                      <div className="h-4 w-2/5 rounded-full bg-photo motion-safe:animate-pulse" />
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="h-56 rounded-md bg-raised motion-safe:animate-pulse" />
+              <div className="h-60 rounded-panel bg-photo motion-safe:animate-pulse" />
             </div>
           )}
 
-          {status === 'error' && (
-            <div role="alert" className="mt-10 max-w-lg rounded-md bg-raised p-8">
-              <p className="text-paper">{error}</p>
-              <button
-                type="button"
-                onClick={handleRetry}
-                className="mt-6 rounded-md bg-crimson px-5 py-2.5 text-sm text-paper transition hover:brightness-110"
-              >
-                Try again
-              </button>
-            </div>
-          )}
-
-          {status === 'loggedOut' && (
-            <div className="mt-10 max-w-lg">
-              <p className="text-lg leading-relaxed text-mute">Log in to see what's in your cart.</p>
-              <Link
-                to="/login"
-                className="mt-8 inline-block rounded-md bg-crimson px-8 py-4 text-paper transition hover:brightness-110"
-              >
-                Log in
-              </Link>
+          {status === 'error' && cart.items.length === 0 && (
+            <div role="alert" className={panelClass}>
+              <p>{error}</p>
+              <button type="button" onClick={retry} className={pillButton}>Try again</button>
             </div>
           )}
 
           {isEmpty && (
-            <div className="mt-10 max-w-lg">
-              <p className="text-lg leading-relaxed text-mute">Nothing in here yet.</p>
-              <Link
-                to="/catalogue"
-                className="mt-8 inline-block rounded-md bg-crimson px-8 py-4 text-paper transition hover:brightness-110"
-              >
-                Browse the catalogue
+            <div className="rounded-panel bg-panel px-[clamp(20px,4vw,56px)] py-[clamp(48px,8vw,110px)] text-panel-fg">
+              <h2 className="display text-[clamp(40px,6vw,84px)]">Your bag is empty.</h2>
+              <p className="mt-3.5 max-w-[46ch] text-panel-soft">Pick a size on any piece and add it here.</p>
+              <Link to="/home#new" className="mt-7 inline-flex h-[52px] items-center gap-3 rounded-full bg-accent pl-6 pr-2 font-semibold text-on-accent">
+                Shop the new drop
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-on-accent/15"><Icon name="arrow" className="h-4 w-4" /></span>
               </Link>
             </div>
           )}
 
-          {status === 'ready' && !isEmpty && (
-            <div className="mt-10 grid items-start gap-10 lg:grid-cols-[1fr_360px]">
-              <ul className="divide-y divide-raised border-y border-raised">
+          {cart.items.length > 0 && (
+            <div className="grid items-start gap-10 lg:grid-cols-[1fr_380px]">
+              <ul className="border-t border-line">
                 {cart.items.map((item) => {
                   const busy = busyId === item._id
                   const warning = stockWarning(item)
                   return (
-                    <li key={item._id} className="flex gap-4 py-6 sm:gap-6">
-                      <Link
-                        to={`/product/${item.product._id}`}
-                        className="aspect-[4/5] w-24 shrink-0 overflow-hidden rounded-md bg-raised sm:w-32"
-                      >
+                    <li key={item._id} className="flex gap-5 border-b border-line py-6">
+                      <Link to={`/product/${item.product._id}`} className="aspect-[4/5] w-28 shrink-0 overflow-hidden rounded-inner bg-photo sm:w-36">
                         <img src={item.product.image} alt="" className="h-full w-full object-cover" />
                       </Link>
-
                       <div className="flex min-w-0 flex-1 flex-col">
                         <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0">
-                            <Link
-                              to={`/product/${item.product._id}`}
-                              className="tracking-display text-2xl leading-tight text-paper transition-colors hover:text-crimson-bright"
-                            >
+                            <Link to={`/product/${item.product._id}`} className="display text-[clamp(24px,2.4vw,34px)] hover:text-accent-fg">
                               {item.product.name}
                             </Link>
-                            <p className="mt-1 text-sm text-mute">
-                              {CATEGORY_LABELS[item.product.category] ?? item.product.category} · Size {item.size} ·{' '}
-                              {formatPrice(item.product.price)} each
+                            <p className="mt-1.5 text-sm text-fg-soft">
+                              {CATEGORY_LABELS[item.product.category] ?? item.product.category}, size {item.size}, {formatPrice(item.product.price)} each
                             </p>
                           </div>
-                          <p className="shrink-0 tabular-nums text-paper">{formatPrice(item.lineTotal)}</p>
+                          <p className="shrink-0 font-semibold tabular-nums">{formatPrice(item.lineTotal)}</p>
                         </div>
-
                         <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-4">
-                          <div
-                            role="group"
-                            aria-label={`Quantity of ${item.product.name}, size ${item.size}`}
-                            className="flex items-center rounded-md bg-smoke"
-                          >
-                            <button
-                              type="button"
-                              onClick={() => decrease(item)}
-                              disabled={busy}
-                              aria-label={item.quantity === 1 ? 'Remove from cart' : 'Decrease quantity'}
-                              className="grid h-10 w-10 place-items-center text-lg text-paper transition-colors hover:text-crimson-bright disabled:cursor-not-allowed disabled:text-neutral-600"
-                            >
-                              −
+                          <div role="group" aria-label={`Quantity of ${item.product.name}, size ${item.size}`} className="inline-flex h-10 items-center rounded-full border-[1.5px] border-line-strong">
+                            <button type="button" onClick={() => decrease(item)} disabled={busy} aria-label={item.quantity === 1 ? 'Remove from bag' : 'Decrease quantity'} className="grid h-10 w-10 place-items-center rounded-full disabled:opacity-35">
+                              <Icon name="minus" className="h-3.5 w-3.5" />
                             </button>
-                            <output aria-live="polite" className="w-7 text-center tabular-nums text-paper">
-                              {item.quantity}
-                            </output>
-                            <button
-                              type="button"
-                              onClick={() => increase(item)}
-                              disabled={busy || item.quantity >= item.available}
-                              aria-label="Increase quantity"
-                              className="grid h-10 w-10 place-items-center text-lg text-paper transition-colors hover:text-crimson-bright disabled:cursor-not-allowed disabled:text-neutral-600"
-                            >
-                              +
+                            <output aria-live="polite" className="min-w-6 text-center font-semibold tabular-nums">{item.quantity}</output>
+                            <button type="button" onClick={() => increase(item)} disabled={busy || item.quantity >= item.available} aria-label="Increase quantity" className="grid h-10 w-10 place-items-center rounded-full disabled:opacity-35">
+                              <Icon name="plus" className="h-3.5 w-3.5" />
                             </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeItem(item)}
-                            disabled={busy}
-                            className="text-sm text-mute underline-offset-4 transition-colors hover:text-paper hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-                          >
+                          <button type="button" onClick={() => remove(item)} disabled={busy} className="text-sm text-fg-soft underline underline-offset-4 hover:text-fg disabled:opacity-50">
                             Remove
                           </button>
                         </div>
-
-                        {warning && <p className="mt-3 text-sm text-crimson-bright">{warning}</p>}
+                        {warning && <p className="mt-3 text-sm text-accent-fg">{warning}</p>}
                       </div>
                     </li>
                   )
                 })}
               </ul>
 
-              <aside
-                aria-labelledby="summary-title"
-                className="rounded-md bg-smoke p-6 lg:sticky lg:top-[calc(var(--nav-h,64px)+1.5rem)]"
-              >
-                <h2 id="summary-title" className={labelClass}>
-                  Summary
-                </h2>
-                <dl className="mt-6 flex flex-col gap-3 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-mute">Items</dt>
-                    <dd className="tabular-nums text-paper">{cart.count}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-mute">Shipping</dt>
-                    <dd className="text-mute">At checkout</dd>
-                  </div>
-                  <div className="mt-3 flex items-baseline justify-between border-t border-raised pt-4">
-                    <dt className=" text-paper">Subtotal</dt>
-                    <dd className="text-2xl tabular-nums text-paper">{formatPrice(cart.subtotal)}</dd>
+              <aside aria-labelledby="summary-title" className="rounded-panel bg-panel p-6 text-panel-fg lg:sticky lg:top-[calc(var(--nav-h,68px)+1.5rem)]">
+                <h2 id="summary-title" className="display text-[34px]">Summary</h2>
+                <dl className="mt-5 flex flex-col gap-3 text-sm">
+                  <div className="flex justify-between"><dt className="text-panel-soft">Items</dt><dd className="tabular-nums">{cart.count}</dd></div>
+                  <div className="flex justify-between"><dt className="text-panel-soft">Shipping</dt><dd className="text-panel-soft">At checkout</dd></div>
+                  <div className="mt-2 flex items-baseline justify-between border-t border-panel-fg/10 pt-4">
+                    <dt className="font-semibold">Subtotal</dt>
+                    <dd className="text-2xl font-semibold tabular-nums">{formatPrice(cart.subtotal)}</dd>
                   </div>
                 </dl>
-                <button
-                  type="button"
-                  disabled={!checkoutReady || hasStockIssue}
-                  className="mt-6 h-12 w-full rounded-md bg-crimson text-paper transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
-                >
+                <button type="button" disabled={!checkoutReady || hasStockIssue} className="mt-6 flex h-[52px] w-full items-center justify-between rounded-full bg-accent pl-6 pr-2 font-semibold text-on-accent disabled:cursor-not-allowed disabled:opacity-45">
                   Checkout
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-on-accent/15"><Icon name="arrow" className="h-4 w-4" /></span>
                 </button>
-                <p className="mt-3 min-h-5 text-center text-xs text-mute">
-                  {hasStockIssue ? 'Fix the items marked above to check out.' : !checkoutReady && 'Checkout is coming soon.'}
+                <p className="mt-3 text-center text-[13px] text-panel-soft">
+                  {hasStockIssue ? 'Fix the items marked above to check out.' : 'Checkout is coming soon.'}
                 </p>
-                <Link
-                  to="/catalogue"
-                  className="mt-4 block text-center text-sm text-mute transition-colors hover:text-paper"
-                >
-                  Keep shopping
-                </Link>
+                <Link to="/catalogue" className="mt-3 block text-center text-sm underline underline-offset-4">Keep shopping</Link>
               </aside>
             </div>
           )}

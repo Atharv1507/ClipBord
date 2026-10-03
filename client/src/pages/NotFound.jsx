@@ -9,27 +9,27 @@ function NotFound() {
     <div className="flex min-h-screen flex-col">
       <Navbar />
       <main className="flex flex-1 items-center">
-        <div className="mx-auto w-full max-w-7xl px-4 py-24 sm:px-6">
-          <p className="eyebrow text-crimson-bright">404</p>
-          <h1 className="mt-4 text-5xl tracking-display sm:text-7xl">
+        <div className="w-full px-4 py-24 md:px-[clamp(16px,2.2vw,32px)]">
+          <p className="text-sm font-semibold text-accent-fg">404</p>
+          <h1 className="display mt-4 max-w-[14ch] text-[clamp(56px,9vw,150px)]">
             This page isn’t on the list.
           </h1>
-          <p className="mt-6 max-w-[50ch] text-lg leading-relaxed text-mute">
+          <p className="mt-6 max-w-[50ch] text-lg leading-relaxed text-fg-soft">
             The link might be old, or the address has a typo. The good stuff is still where
             you left it.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
               to="/home"
-              className="rounded-md bg-crimson px-8 py-4 text-paper transition hover:brightness-110"
+              className="inline-flex h-[52px] items-center rounded-full bg-accent px-7 font-semibold text-on-accent transition hover:brightness-110"
             >
               Back to home
             </Link>
             <Link
               to="/catalogue"
-              className="rounded-md bg-smoke px-8 py-4 text-paper transition-colors hover:bg-raised"
+              className="inline-flex h-[52px] items-center rounded-full border-[1.5px] border-line-strong px-7 font-semibold transition-colors hover:border-fg"
             >
-              Browse the catalogue
+              Shop all
             </Link>
           </div>
         </div>

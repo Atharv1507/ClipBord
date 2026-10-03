@@ -10,28 +10,35 @@ import NotFound from './pages/NotFound'
 import Cart from './pages/Cart'
 import Wishlist from './pages/Wishlist'
 import { AuthProvider } from './context/AuthContext'
+import { BagProvider } from './context/BagContext'
+import BagDrawer from './components/BagDrawer'
 import PublicRoute from './components/PublicRoute'
 import ProtectedRoute from './components/ProtectedRoute'
-function App() {
-  return(
-<AuthProvider>
-    <BrowserRouter>
-    <Routes>
-        <Route path='/' element={<Navigate to='/home' replace/>}/>
-        <Route path='/signup' element={<PublicRoute><Signup/></PublicRoute>}/>
-        <Route path='/home' element={<Home/>}/>
-        <Route path='/login' element={<PublicRoute><Login/></PublicRoute>}/>
-        <Route path='/product/:id' element={<ProductDetails/>}/>
-        <Route path='/about' element={<About/>}/>
-        <Route path='/catalogue' element={<Catalogue/>}/>
-        <Route path='/cart' element={<ProtectedRoute><Cart/></ProtectedRoute>}/>
-        <Route path='/wishlist' element={<ProtectedRoute><Wishlist/></ProtectedRoute>}/>
-        <Route path='*' element={<NotFound/>}/>
-    </Routes>
-    </BrowserRouter>
-</AuthProvider>
-  )
 
+function App() {
+  return (
+    <AuthProvider>
+      <BagProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path='/' element={<Navigate to='/home' replace />} />
+            <Route path='/signup' element={<PublicRoute><Signup /></PublicRoute>} />
+            <Route path='/home' element={<Home />} />
+            <Route path='/login' element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path='/product/:id' element={<ProductDetails />} />
+            <Route path='/about' element={<About />} />
+            <Route path='/catalogue' element={<Catalogue />} />
+            <Route path='/cart' element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+            <Route path='/wishlist' element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+            <Route path='/bookmarks' element={<Navigate to='/wishlist' replace />} />
+            <Route path='*' element={<NotFound />} />
+          </Routes>
+          {/* One bag drawer for the whole app; the navbar and Add to bag open it. */}
+          <BagDrawer />
+        </BrowserRouter>
+      </BagProvider>
+    </AuthProvider>
+  )
 }
 
 export default App

@@ -49,6 +49,11 @@ async function toggle(id) {
   }
 }
 
+// How many products are bookmarked, for the navbar badge.
+export function useWishlistCount() {
+  return useSyncExternalStore(subscribe, () => savedIds.size)
+}
+
 // Each card reads only its own true/false, so toggling one bookmark
 // re-renders that card alone.
 export function useWishlist(id) {

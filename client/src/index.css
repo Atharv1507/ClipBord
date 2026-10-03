@@ -1,82 +1,137 @@
 @import "tailwindcss";
 
-/* Clipbord design tokens. Every color and font in the app comes from here,
-   e.g. --color-crimson becomes bg-crimson / text-crimson. */
-@theme {
-  --color-ink: #000000;
-  --color-smoke: #111111; /* section bands, inputs */
-  --color-raised: #1a1a1a; /* image placeholders, avatar, toast */
-  --color-paper: #f3efe6; /* the cream from the logo */
-  --color-mute: #9a958c;
-  /* On paper (the hang tags): a darker cream for photo grounds, muted text. */
-  --color-paper-dim: #e6e0d3;
-  --color-ink-mute: #6e685e;
-  /* Fills (buttons, badges) carry paper text; use crimson-bright for red text on black. */
-  --color-crimson: #b3122e;
-  --color-crimson-bright: #e0475c;
+/* Clipbord design tokens. Two modes, Paper (light) and Noir (dark), switched by
+   data-theme on <html> (see useTheme). Components use the semantic names below, e.g.
+   bg-canvas, text-fg, bg-accent, so they follow the mode without dark: variants.
+   Every text pair passes WCAG AA in both modes (lowest 4.8:1).
 
-  /* Type system: one face, Forum, everywhere. It has a single weight, so hierarchy comes
-     from size, color, case and spacing, never weight (font-synthesis is off so nothing
-     fakes a bold). Forum has no rupee sign; Noto Serif supplies just that glyph.
-     - Headlines and product names get tracking-display.
-     - eyebrow: the one small-caps label style (section labels, kickers). */
-  --font-serif: "Forum", "Noto Serif", ui-serif, Georgia, serif;
-  --default-font-family: var(--font-serif);
-  --tracking-display: -0.01em;
-  /* Forum has one weight; this outline (in each element's own text color) thickens it.
-     In em, so every size gains the same proportion. Raise it for heavier type. */
-  --text-weight: 0.02em;
-  /* Forum runs small, so the text steps sit 1px above Tailwind's defaults.
-     Headline sizes (3xl and up) are unchanged. */
-  --text-xs: 0.8125rem;
-  --text-sm: 0.9375rem;
-  --text-base: 1.0625rem;
-  --text-lg: 1.1875rem;
-  --text-xl: 1.3125rem;
-  --text-2xl: 1.5625rem;
+   canvas / canvas-2   page background, alternate section bands (footer, rack)
+   fg / fg-soft        text, secondary text on the canvas
+   line / line-strong  hairlines, pill outlines
+   panel / panel-fg / panel-soft   product cards and other raised panels
+   accent / on-accent  the red, and text on it; accent-fg is red text on the canvas
+   drawer / drawer-fg / drawer-soft / drawer-line   bag, menus, dialogs
+   tile-1..3 (+ -fg)   the three category tiles
+   photo               image placeholder behind photos while they load */
+[data-theme="paper"] {
+  color-scheme: light;
+  --c-canvas: #F4F3F0; --c-canvas-2: #E9E7E3; --c-fg: #0B0B0B; --c-fg-soft: #5C5954;
+  --c-line: rgb(11 11 11 / .1); --c-line-strong: rgb(11 11 11 / .22);
+  --c-panel: #FFFFFF; --c-panel-fg: #0B0B0B; --c-panel-soft: #5C5954;
+  --c-accent: #C8102E; --c-on-accent: #FFFFFF; --c-accent-fg: #B10E28; --c-save: #B10E28;
+  --c-tile-1: #0B0B0B; --c-tile-1-fg: #F4F3F0; --c-tile-2: #C8102E; --c-tile-2-fg: #FFFFFF; --c-tile-3: #FFFFFF; --c-tile-3-fg: #0B0B0B;
+  --c-drawer: #FFFFFF; --c-drawer-fg: #0B0B0B; --c-drawer-soft: #5C5954; --c-drawer-line: rgb(11 11 11 / .1);
+  --c-photo: #E2DFDA; --c-scrim: rgb(11 11 11 / .3); --c-shadow: rgb(11 11 11 / .16);
+}
+[data-theme="noir"] {
+  color-scheme: dark;
+  --c-canvas: #0A0A0A; --c-canvas-2: #151515; --c-fg: #F2F0EC; --c-fg-soft: #A39F98;
+  --c-line: rgb(242 240 236 / .12); --c-line-strong: rgb(242 240 236 / .26);
+  --c-panel: #ECEAE6; --c-panel-fg: #0A0A0A; --c-panel-soft: #57534E;
+  --c-accent: #E3120B; --c-on-accent: #FFFFFF; --c-accent-fg: #FF4A3D; --c-save: #E3120B;
+  --c-tile-1: #E3120B; --c-tile-1-fg: #FFFFFF; --c-tile-2: #ECEAE6; --c-tile-2-fg: #0A0A0A; --c-tile-3: #1C1C1C; --c-tile-3-fg: #F2F0EC;
+  --c-drawer: #151515; --c-drawer-fg: #F2F0EC; --c-drawer-soft: #A39F98; --c-drawer-line: rgb(242 240 236 / .12);
+  --c-photo: #1A1A1A; --c-scrim: rgb(0 0 0 / .55); --c-shadow: rgb(0 0 0 / .5);
 }
 
-@utility eyebrow {
-  font-size: var(--text-xs);
-  line-height: var(--text-xs--line-height);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
+@theme inline {
+  --color-canvas: var(--c-canvas);
+  --color-canvas-2: var(--c-canvas-2);
+  --color-fg: var(--c-fg);
+  --color-fg-soft: var(--c-fg-soft);
+  --color-line: var(--c-line);
+  --color-line-strong: var(--c-line-strong);
+  --color-panel: var(--c-panel);
+  --color-panel-fg: var(--c-panel-fg);
+  --color-panel-soft: var(--c-panel-soft);
+  --color-accent: var(--c-accent);
+  --color-on-accent: var(--c-on-accent);
+  --color-accent-fg: var(--c-accent-fg);
+  --color-save: var(--c-save);
+  --color-tile-1: var(--c-tile-1);
+  --color-tile-1-fg: var(--c-tile-1-fg);
+  --color-tile-2: var(--c-tile-2);
+  --color-tile-2-fg: var(--c-tile-2-fg);
+  --color-tile-3: var(--c-tile-3);
+  --color-tile-3-fg: var(--c-tile-3-fg);
+  --color-drawer: var(--c-drawer);
+  --color-drawer-fg: var(--c-drawer-fg);
+  --color-drawer-soft: var(--c-drawer-soft);
+  --color-drawer-line: var(--c-drawer-line);
+  --color-photo: var(--c-photo);
+  --color-scrim: var(--c-scrim);
+  --color-shadow: var(--c-shadow);
+}
+
+@theme {
+  /* Geist for everything you read, Bricolage Grotesque (condensed, heavy) for display. */
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --radius-panel: 20px;
+  --radius-inner: 14px;
+  --ease-spring: cubic-bezier(.32, .72, 0, 1);
+  --ease-out-soft: cubic-bezier(.22, .8, .2, 1);
+}
+
+/* The display face: Bricolage at 78% width, heavy and tight. */
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 78%;
+  letter-spacing: -0.03em;
+  line-height: .88;
 }
 
 @layer base {
   html {
-    color-scheme: dark;
-    background-color: var(--color-ink);
-    color: var(--color-paper);
-    font-synthesis-weight: none;
+    background-color: var(--c-canvas);
+    color: var(--c-fg);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color .5s var(--ease-out-soft), color .5s var(--ease-out-soft);
   }
 
-  /* Set per element, not inherited from html, so the em resolves at each text size. */
-  *, ::before, ::after, ::placeholder {
-    -webkit-text-stroke-width: var(--text-weight);
+  body {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.55;
+    overflow-x: clip;
   }
 
   ::selection {
-    background-color: var(--color-crimson);
-    color: var(--color-paper);
+    background-color: var(--c-accent);
+    color: var(--c-on-accent);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-crimson-bright);
+    outline: 2px solid var(--c-fg);
     outline-offset: 3px;
+  }
+
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
 
-/* The logo on the loading splash (ScrollVideo) rises out of a blur. */
-@keyframes splash-logo-in {
-  from { opacity: 0; filter: blur(10px); transform: translateY(14px); }
-  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+/* Pop-in for menus and dialogs */
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-6px) scale(.97); }
+}
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px) scale(.98); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
   }
 }

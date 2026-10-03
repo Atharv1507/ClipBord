@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clipbord</title>
+<script>/* Mode before first paint: saved choice, ?mode=light|dark, else the system setting. */(function(){var t,q=new URLSearchParams(location.search).get('mode');try{t=JSON.parse(localStorage.getItem('cb3-mode'))}catch(e){}document.documentElement.dataset.theme=q==='dark'?'noir':q==='light'?'paper':(t==='paper'||t==='noir'?t:t?'noir':'')||(matchMedia('(prefers-color-scheme: dark)').matches?'noir':'paper')})()</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="product">
+<div id="chrome-header"></div>
+
+<main id="main">
+  <p class="crumb pdp-crumb" id="pdpCrumb"></p>
+  <section class="pdp" aria-labelledby="pdpName">
+    <div class="pdp-wrap">
+      <div class="pdp-gallery" id="pdpGallery" tabindex="0" aria-label="Product photos"></div>
+      <div class="view-toggle" role="group" aria-label="View">
+        <button type="button" aria-pressed="true" data-view="0">Front</button>
+        <button type="button" aria-pressed="false" data-view="1">Back</button>
+      </div>
+    </div>
+    <div class="pdp-info">
+      <p class="pdp-cat" id="pdpCat"></p>
+      <h1 class="pdp-name display" id="pdpName"></h1>
+      <div class="pdp-price"><strong id="pdpPrice"></strong><span>Incl. of all taxes</span></div>
+      <p><span style="color:var(--soft)">Colour</span>&nbsp;&nbsp;<span id="pdpColour"></span></p>
+      <fieldset class="sizes">
+        <legend><span>Size</span><a href="#sizefit" id="sizeGuide">Size guide</a></legend>
+        <div class="size-row">
+          <input type="radio" name="size" id="sz-s" value="S"><label class="size-chip" for="sz-s">S</label>
+          <input type="radio" name="size" id="sz-m" value="M" checked><label class="size-chip" for="sz-m">M</label>
+          <input type="radio" name="size" id="sz-l" value="L"><label class="size-chip" for="sz-l">L</label>
+          <input type="radio" name="size" id="sz-xl" value="XL" disabled aria-describedby="sizeNote"><label class="size-chip" for="sz-xl">XL<span class="sr-only">, sold out</span></label>
+        </div>
+        <p class="size-note" id="sizeNote">XL is sold out.</p>
+      </fieldset>
+      <div class="pdp-actions">
+        <button class="btn btn-accent" id="addBtn" type="button">Add to bag <span class="nub"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></span></button>
+        <button class="save save-big" id="pdpSave" type="button" data-id="" aria-pressed="false" aria-label="Bookmark">
+          <svg class="i off" aria-hidden="true"><use href="#i-bookmark"/></svg><svg class="i on" aria-hidden="true"><use href="#i-bookmark-fill"/></svg>
+        </button>
+      </div>
+      <p class="pdp-desc" id="pdpDesc"></p>
+      <div class="disclosures">
+        <details><summary>Details <svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><div class="body" id="pdpDetails"></div></details>
+        <details id="sizefit"><summary>Size and fit <svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><div class="body">Relaxed fit with dropped shoulders. Between sizes? Write to clipbord.in@gmail.com with your usual size and we will help you choose.</div></details>
+        <details><summary>Shipping <svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><div class="body">We ship across India. Delivery time and charges show at checkout.</div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="moreTitle">
+    <div class="section-head"><h2 id="moreTitle">You might also like</h2><a href="category.html">Shop all</a></div>
+    <div class="grid" id="moreGrid"></div>
+  </section>
+</main>
+
+<div id="chrome-footer"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

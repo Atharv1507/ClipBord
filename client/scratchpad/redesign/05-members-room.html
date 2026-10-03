@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clipbord Members' Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --felt: #12261E;
+    --felt-deep: #0B1813;
+    --felt-lift: #183026;
+    --bone: #E8E4DA;
+    --muted: #A8B0A6;          /* 7.1:1 on felt, 8.2:1 on deep felt */
+    --tan: #C9A27A;            /* 6.8:1 on felt; deep felt on tan 7.7:1 */
+    --tan-hi: #D8B791;
+    --on-bone: #0B1813;        /* 12.5:1 on bone */
+    --muted-on-bone: #545C55;  /* 5.4:1 on bone */
+    --inlay-on-bone: #A9825A;  /* fine rules on bone mounts */
+    --tan-deep: #7A5636;       /* selected marks on bone, 5.6:1 */
+    --rule: rgba(201, 162, 122, 0.32);
+    --nav-h: 76px;
+    --gutter: clamp(16px, 4vw, 56px);
+    --display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+    --ui: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --slow: 700ms cubic-bezier(.2, .7, .2, 1);
+    color-scheme: dark;
+  }
+  @media (max-width: 860px) { :root { --nav-h: 64px; } }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--nav-h) + 24px); }
+  body {
+    margin: 0;
+    background-color: var(--felt);
+    /* a whisper of baize grain */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .22 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    color: var(--bone);
+    font-family: var(--ui);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  img { display: block; max-width: 100%; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--tan); outline-offset: 3px; }
+  .on-bone :focus-visible, .on-bone:focus-visible { outline-color: var(--on-bone); }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .icon { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---------- Header ---------- */
+  .header {
+    position: sticky; top: 0; z-index: 40;
+    height: var(--nav-h);
+    background: var(--felt-deep);
+    border-bottom: 1px solid var(--rule);
+  }
+  .header__inner {
+    height: 100%;
+    max-width: 1440px; margin: 0 auto; padding: 0 var(--gutter);
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px;
+  }
+  .nav { display: flex; gap: 28px; }
+  .nav a {
+    font-size: 13px; letter-spacing: .02em; text-decoration: none; color: var(--bone);
+    padding: 6px 0; background: linear-gradient(var(--tan), var(--tan)) left bottom / 0 1px no-repeat;
+    transition: background-size var(--slow), color var(--slow);
+  }
+  .nav a:hover { color: var(--tan); background-size: 100% 1px; }
+  .brand { display: block; width: 88px; color: var(--bone); text-decoration: none; }
+  .brand__logo { display: block; width: 100%; aspect-ratio: 1000 / 642.7; visibility: hidden; }
+  .brand__logo svg { display: block; width: 100%; height: 100%; }
+  .utils { display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
+  .util {
+    position: relative; width: 42px; height: 42px; display: grid; place-items: center;
+    border-radius: 50%; color: var(--bone); transition: color var(--slow);
+  }
+  .util:hover { color: var(--tan); }
+  .count {
+    position: absolute; top: 3px; right: 1px; min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; background: var(--tan); color: var(--felt-deep);
+    font-size: 11px; font-weight: 600; line-height: 18px; text-align: center;
+  }
+  .count[hidden] { display: none; }
+  .menu-btn { display: none; }
+  .search-panel {
+    position: absolute; left: 0; right: 0; top: 100%;
+    background: var(--felt-deep); border-bottom: 1px solid var(--rule);
+    padding: 20px var(--gutter) 28px;
+  }
+  .search-panel[hidden] { display: none; }
+  .search-panel form { max-width: 640px; margin: 0 auto; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--tan); }
+  .search-panel input {
+    flex: 1; min-width: 0; background: none; border: 0; color: var(--bone);
+    font-family: var(--display); font-size: 28px; font-weight: 300; padding: 10px 0;
+  }
+  .search-panel input::placeholder { color: var(--muted); }
+  .search-panel input:focus { outline: none; }
+  .search-panel form:focus-within { border-bottom-color: var(--tan-hi); box-shadow: 0 1px 0 var(--tan-hi); }
+  .mobile-nav {
+    position: absolute; left: 0; right: 0; top: 100%;
+    background: var(--felt-deep); border-bottom: 1px solid var(--rule);
+    padding: 12px var(--gutter) 32px;
+  }
+  .mobile-nav[hidden] { display: none; }
+  .mobile-nav a {
+    display: block; padding: 12px 0; text-decoration: none;
+    font-family: var(--display); font-size: 30px; font-weight: 300; line-height: 1.2;
+    border-bottom: 1px solid rgba(201,162,122,.16);
+  }
+  @media (max-width: 1040px) { .nav { gap: 18px; } }
+  @media (max-width: 860px) {
+    .nav { display: none; }
+    .menu-btn { display: grid; }
+    .header__inner { gap: 8px; }
+    .brand { width: 66px; }
+    .utils .util--wish { display: none; }
+    .util { width: 40px; height: 40px; }
+  }
+
+  /* ---------- Hero: logo fill and dock ---------- */
+  .hero {
+    position: relative; z-index: 45; pointer-events: none;
+    margin-bottom: calc(var(--nav-h) - 100svh);
+  }
+  .hero__stage { position: relative; height: calc(100svh - var(--nav-h)); display: grid; place-items: center; }
+  .hero__backdrop {
+    position: absolute; inset: 0; height: 100lvh;
+    background:
+      radial-gradient(ellipse 46% 62% at 50% -6%, rgba(232, 228, 218, .085), transparent 70%),
+      radial-gradient(ellipse 80% 70% at 50% 46%, #132a20 0%, var(--felt-deep) 62%, #07100c 100%);
+  }
+  .hero__lamp-clip { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; }
+  .hero__glow {
+    width: min(118vmin, 1100px); height: min(72vmin, 680px); border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(201, 162, 122, .26), rgba(201, 162, 122, .08) 55%, transparent);
+    filter: blur(18px); opacity: 0;
+  }
+  .hero__slot {
+    position: relative; z-index: 2;
+    width: min(74vw, 540px); aspect-ratio: 1000 / 642.7;
+    transform-origin: top left; will-change: transform;
+  }
+  .hero__slot svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+  /* ---------- Campaign fold ---------- */
+  .fold { position: relative; height: calc(100svh - var(--nav-h)); min-height: 540px; max-height: 960px; overflow: hidden; background: #cfcdc8; }
+  .fold__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
+  .fold::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to top, rgba(11, 24, 19, .55), transparent 40%);
+  }
+  .plaque {
+    position: absolute; z-index: 1; left: var(--gutter); bottom: clamp(24px, 6vh, 64px);
+    width: min(440px, calc(100% - 2 * var(--gutter)));
+    background: var(--felt-deep); padding: 40px 40px 36px;
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .6);
+  }
+  .plaque::before, .plaque::after { content: ""; position: absolute; pointer-events: none; border: 1px solid var(--rule); }
+  .plaque::before { inset: 8px; }
+  .plaque::after { inset: 12px; }
+  .plaque h2 { margin: 0 0 12px; font-family: var(--display); font-weight: 300; font-size: clamp(40px, 4.4vw, 58px); line-height: 1.04; letter-spacing: -.005em; }
+  .plaque p { margin: 0 0 28px; color: var(--muted); max-width: 34ch; }
+  .plaque .btn { position: relative; z-index: 1; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    height: 52px; padding: 0 34px; white-space: nowrap;
+    background: var(--tan); color: var(--felt-deep);
+    font-family: var(--ui); font-size: 14px; font-weight: 600; letter-spacing: .03em;
+    text-decoration: none; border-radius: 1px;
+    transition: background-color var(--slow);
+  }
+  .btn:hover { background: var(--tan-hi); }
+  .btn--felt { background: var(--felt-deep); color: var(--bone); }
+  .btn--felt:hover { background: var(--felt); }
+  .btn--block { width: 100%; }
+
+  /* ---------- Sections ---------- */
+  .section { position: relative; padding: clamp(96px, 12vw, 168px) var(--gutter); }
+  .section--deep { background: var(--felt-deep); }
+  .wrap { max-width: 1240px; margin: 0 auto; }
+  .head { text-align: center; margin: 0 auto clamp(56px, 7vw, 96px); max-width: 640px; }
+  .head h2 { margin: 0; font-family: var(--display); font-weight: 300; font-size: clamp(44px, 5.4vw, 76px); line-height: 1.06; letter-spacing: -.01em; }
+  .head p { margin: 18px auto 0; color: var(--muted); max-width: 46ch; }
+  .inlay { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 22px auto 0; width: 150px; }
+  .inlay::before, .inlay::after { content: ""; flex: 1; height: 4px; border-top: 1px solid var(--tan); border-bottom: 1px solid var(--tan); opacity: .7; }
+  .inlay i { width: 7px; height: 7px; transform: rotate(45deg); border: 1px solid var(--tan); }
+
+  /* ---------- Plates (product card) ---------- */
+  .plates { display: grid; grid-template-columns: repeat(6, 1fr); gap: clamp(28px, 3.4vw, 52px); }
+  .plate { grid-column: span 2; }
+  .plate:nth-child(4) { grid-column: 2 / span 2; }
+  .plate:nth-child(5) { grid-column: 4 / span 2; }
+  .plate[hidden] { display: none; }
+  .plates.is-filtered .plate { grid-column: span 2; }
+  .plate {
+    position: relative; background: var(--bone); color: var(--on-bone);
+    padding: 18px 18px 22px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.05) inset, 0 44px 60px -40px rgba(0, 0, 0, .75);
+  }
+  .plate__frame { position: relative; padding: 7px; border: 1px solid var(--inlay-on-bone); }
+  .plate__frame::after { content: ""; position: absolute; inset: 3px; border: 1px solid var(--inlay-on-bone); pointer-events: none; }
+  .plate__photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: #d9d6cd; }
+  .plate__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity var(--slow); }
+  .plate__photo .is-back { opacity: 0; }
+  .plate:hover .is-back, .plate:focus-within .is-back { opacity: 1; }
+  .plate__meta { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 16px; padding: 18px 4px 0; }
+  .plate__name {
+    font-family: var(--display); font-weight: 500; font-size: 24px; line-height: 1.15; text-decoration: none;
+  }
+  .plate__name::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+  .plate__name:focus-visible { outline: none; }
+  .plate:has(.plate__name:focus-visible) { outline: 2px solid var(--tan); outline-offset: 5px; }
+  .plate__price { font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .plate__cat { grid-column: 1 / -1; font-size: 13px; color: var(--muted-on-bone); }
+  .wish {
+    position: absolute; z-index: 2; top: 12px; right: 12px; width: 40px; height: 40px;
+    display: grid; place-items: center; border-radius: 50%;
+    background: rgba(232, 228, 218, .92); color: var(--on-bone);
+    transition: color var(--slow);
+  }
+  .wish .icon { width: 20px; height: 20px; }
+  .wish[aria-pressed="true"] { color: var(--tan-deep); }
+  .wish[aria-pressed="true"] .icon path { fill: currentColor; }
+  .wish:focus-visible { outline: 2px solid var(--on-bone); outline-offset: 2px; }
+  .empty { text-align: center; color: var(--muted); margin: 0; }
+  .empty[hidden] { display: none; }
+
+  @media (max-width: 1000px) {
+    .plates { grid-template-columns: repeat(2, 1fr); }
+    .plate, .plate:nth-child(4), .plates.is-filtered .plate { grid-column: span 1; }
+    .plate:nth-child(5) { grid-column: 1 / -1; justify-self: center; width: calc(50% - clamp(28px, 3.4vw, 52px) / 2); }
+  }
+  @media (max-width: 560px) {
+    .plates { gap: 24px 14px; }
+    .plate { padding: 9px 9px 14px; }
+    .plate__frame { padding: 5px; }
+    .plate__frame::after { inset: 2px; }
+    .plate__meta { grid-template-columns: 1fr; padding: 12px 2px 0; gap: 2px; }
+    .plate__name { font-size: 18px; }
+    .plate__price { font-size: 13px; }
+    .plate__cat { display: none; }
+    .wish { top: 8px; right: 8px; width: 36px; height: 36px; }
+    .plate:nth-child(5) { width: calc(50% - 7px); }
+  }
+
+  /* ---------- Niches (categories) ---------- */
+  .niches { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(24px, 4vw, 64px); }
+  .niche { text-decoration: none; text-align: center; display: block; }
+  .niche__arch {
+    background: var(--bone); padding: 14px; border-radius: 999px 999px 2px 2px;
+    box-shadow: 0 44px 60px -40px rgba(0, 0, 0, .8);
+  }
+  .niche__rule { border: 1px solid var(--inlay-on-bone); border-radius: 999px 999px 0 0; padding: 4px; }
+  .niche__rule > div { border: 1px solid var(--inlay-on-bone); border-radius: 999px 999px 0 0; padding: 6px; }
+  .niche__img { border-radius: 999px 999px 0 0; overflow: hidden; aspect-ratio: 3 / 4; background: #d9d6cd; }
+  .niche__img img { width: 100%; height: 100%; object-fit: cover; transition: transform 1200ms cubic-bezier(.2,.7,.2,1); }
+  .niche:hover .niche__img img { transform: scale(1.035); }
+  .niche h3 { margin: 32px 0 6px; font-family: var(--display); font-weight: 400; font-size: clamp(30px, 2.8vw, 40px); line-height: 1.1; }
+  .niche p { margin: 0; color: var(--muted); font-size: 14px; }
+  .niche:hover h3 { color: var(--tan); }
+  .niche:focus-visible { outline-offset: 10px; }
+  @media (max-width: 760px) {
+    .niches { grid-template-columns: 1fr; gap: 64px; max-width: 300px; margin: 0 auto; }
+  }
+
+  /* ---------- PDP ---------- */
+  .pdp { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(40px, 6vw, 104px); align-items: start; }
+  .gallery { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 24px; }
+  .thumbs { display: flex; flex-direction: column; gap: 14px; }
+  .thumb { background: var(--bone); padding: 6px; opacity: .55; transition: opacity var(--slow); }
+  .thumb img { aspect-ratio: 4 / 5; object-fit: cover; width: 100%; border: 1px solid var(--inlay-on-bone); }
+  .thumb[aria-pressed="true"], .thumb:hover { opacity: 1; }
+  .thumb[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--tan), 0 0 0 4px var(--felt), 0 0 0 5px var(--tan); }
+  .thumbs:empty { display: none; }
+  .mount { background: var(--bone); padding: clamp(16px, 2.4vw, 32px); box-shadow: 0 50px 70px -46px rgba(0,0,0,.8); }
+  .mount .plate__frame { padding: 10px; }
+  .mount .plate__frame::after { inset: 4px; }
+  .mount .plate__photo img { transition: opacity 500ms ease; }
+  .info { position: sticky; top: calc(var(--nav-h) + 40px); padding-top: 8px; }
+  .info__cat { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  .info h2 { margin: 0; font-family: var(--display); font-weight: 300; font-size: clamp(42px, 4.4vw, 64px); line-height: 1.04; letter-spacing: -.01em; }
+  .price { margin: 22px 0 0; font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .tax { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .sizes { margin: 40px 0 0; }
+  .sizes__top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .sizes__label { font-size: 13px; color: var(--muted); }
+  .sizes__guide { font-size: 13px; color: var(--bone); text-underline-offset: 4px; text-decoration-color: var(--tan); }
+  .sizes__row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .size {
+    position: relative; height: 52px; border: 1px solid var(--rule);
+    font-size: 14px; font-weight: 500; letter-spacing: .04em; color: var(--bone);
+    transition: border-color var(--slow), background-color var(--slow), color var(--slow);
+  }
+  .size:hover:not(:disabled) { border-color: var(--tan); }
+  .size[aria-checked="true"] { background: var(--tan); border-color: var(--tan); color: var(--felt-deep); }
+  .size:disabled { cursor: not-allowed; color: var(--muted); border-color: rgba(168,176,166,.22);
+    background: linear-gradient(to top right, transparent calc(50% - .5px), rgba(168,176,166,.45) 50%, transparent calc(50% + .5px)); }
+  .sizes__note { margin: 12px 0 0; font-size: 13px; color: var(--muted); min-height: 1.6em; }
+  .info .btn { margin-top: 24px; }
+  .desc { margin: 36px 0 0; color: var(--bone); font-size: 15px; max-width: 46ch; }
+  .disc { margin-top: 36px; border-top: 1px solid var(--rule); }
+  .disc details { border-bottom: 1px solid var(--rule); }
+  .disc summary {
+    list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 0; font-size: 14px; font-weight: 500;
+  }
+  .disc summary::-webkit-details-marker { display: none; }
+  .disc summary .icon { width: 16px; height: 16px; color: var(--tan); transition: transform var(--slow); }
+  .disc details[open] summary .icon { transform: rotate(45deg); }
+  .disc details > div { padding: 0 0 22px; color: var(--muted); font-size: 14px; max-width: 48ch; }
+  .disc ul { margin: 0; padding-left: 18px; }
+  .disc a { color: var(--bone); text-decoration-color: var(--tan); text-underline-offset: 3px; }
+  @media (max-width: 900px) {
+    .pdp { grid-template-columns: 1fr; }
+    .info { position: static; }
+  }
+  @media (max-width: 560px) {
+    .gallery { grid-template-columns: 1fr; }
+    .thumbs { flex-direction: row; order: 2; }
+    .thumb { width: 78px; }
+  }
+
+  /* ---------- Bag slip ---------- */
+  .scrim {
+    position: fixed; inset: 0; z-index: 69; background: rgba(7, 16, 12, .66);
+    opacity: 0; visibility: hidden; transition: opacity 500ms ease, visibility 0s linear 500ms;
+  }
+  .slip {
+    position: fixed; z-index: 70; top: 0; right: 0; bottom: 0; width: min(440px, 100%);
+    background: var(--bone); color: var(--on-bone);
+    padding: 22px; display: flex;
+    transform: translateX(100%); visibility: hidden;
+    transition: transform 600ms cubic-bezier(.2,.7,.2,1), visibility 0s linear 600ms;
+  }
+  .bag-open .scrim { opacity: 1; visibility: visible; transition: opacity 500ms ease; }
+  .bag-open .slip { transform: none; visibility: visible; transition: transform 600ms cubic-bezier(.2,.7,.2,1); }
+  .slip__in { flex: 1; display: flex; flex-direction: column; border: 1px solid var(--inlay-on-bone); outline: 1px solid var(--inlay-on-bone); outline-offset: -5px; padding: 26px 26px 26px; min-height: 0; }
+  .slip__head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 18px; border-bottom: 1px solid rgba(169,130,90,.5); }
+  .slip__head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1; }
+  .slip__close { width: 42px; height: 42px; display: grid; place-items: center; margin-right: -8px; }
+  .lines { flex: 1; overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+  .line { display: grid; grid-template-columns: 84px 1fr; gap: 18px; padding: 22px 0; border-bottom: 1px solid rgba(169,130,90,.35); }
+  .line__img { align-self: start; border: 1px solid var(--inlay-on-bone); padding: 3px; }
+  .line__img img { aspect-ratio: 4 / 5; object-fit: cover; width: 100%; }
+  .line__name { margin: 0; font-family: var(--display); font-weight: 500; font-size: 21px; line-height: 1.15; }
+  .line__meta { margin: 2px 0 0; font-size: 13px; color: var(--muted-on-bone); }
+  .line__row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--inlay-on-bone); height: 36px; }
+  .stepper button { width: 36px; height: 34px; display: grid; place-items: center; }
+  .stepper button .icon { width: 14px; height: 14px; }
+  .stepper output { min-width: 28px; text-align: center; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .line__price { font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .line__remove { margin-top: 10px; font-size: 13px; color: var(--muted-on-bone); text-decoration: underline; text-underline-offset: 3px; }
+  .bag-empty { padding: 40px 0; color: var(--muted-on-bone); }
+  .bag-empty p { margin: 0 0 6px; }
+  .slip__foot { padding-top: 20px; border-top: 1px solid rgba(169,130,90,.5); }
+  .subtotal { display: flex; justify-content: space-between; align-items: baseline; margin: 0; }
+  .subtotal dt { font-size: 14px; }
+  .subtotal dd { margin: 0; font-family: var(--display); font-size: 30px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .slip__note { margin: 4px 0 18px; font-size: 13px; color: var(--muted-on-bone); }
+  .slip .btn--felt:focus-visible { outline-color: var(--on-bone); }
+  @media (max-width: 480px) { .slip { padding: 12px; } .slip__in { padding: 20px 18px; } }
+
+  /* ---------- Footer ---------- */
+  .footer { background: var(--felt-deep); padding: clamp(88px, 10vw, 136px) var(--gutter) 40px; text-align: center; border-top: 1px solid var(--rule); }
+  .mono {
+    display: block; width: 46px; height: 84px; margin: 0 auto 40px; background: var(--tan);
+    -webkit-mask: url(/src/assets/clipbord-monogram.svg) center / contain no-repeat;
+            mask: url(/src/assets/clipbord-monogram.svg) center / contain no-repeat;
+  }
+  .footer__lede { margin: 0; color: var(--muted); }
+  .footer__mail { display: inline-block; margin-top: 10px; font-family: var(--display); font-weight: 300; font-size: clamp(30px, 4.6vw, 56px); line-height: 1.15; overflow-wrap: anywhere; text-decoration: underline 1px var(--tan); text-underline-offset: .2em; text-decoration-skip-ink: auto; }
+  .footer__mail:hover { color: var(--tan); }
+  .footer__ig { display: inline-flex; align-items: center; gap: 10px; margin-top: 28px; text-decoration: none; font-size: 14px; }
+  .footer__ig:hover { color: var(--tan); }
+  .footer__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 32px; margin: 72px 0 0; padding: 32px 0 0; list-style: none; border-top: 1px solid var(--rule); }
+  .footer__links a { font-size: 13px; text-decoration: none; color: var(--bone); }
+  .footer__links a:hover { color: var(--tan); }
+  .footer__copy { margin: 28px 0 0; font-size: 13px; color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-search" viewBox="0 0 256 256"><circle cx="112" cy="112" r="80"/><line x1="168.57" y1="168.57" x2="224" y2="224"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 256 256"><path d="M128,216S24,160,24,94A54,54,0,0,1,78,40c22.59,0,41.94,12.31,50,32,8.06-19.69,27.41-32,50-32a54,54,0,0,1,54,54C232,160,128,216,128,216Z"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 256 256"><rect x="32" y="48" width="192" height="160" rx="8"/><path d="M168,88a40,40,0,0,1-80,0"/></symbol>
+    <symbol id="i-list" viewBox="0 0 256 256"><line x1="40" y1="128" x2="216" y2="128"/><line x1="40" y1="64" x2="216" y2="64"/><line x1="40" y1="192" x2="216" y2="192"/></symbol>
+    <symbol id="i-x" viewBox="0 0 256 256"><line x1="200" y1="56" x2="56" y2="200"/><line x1="200" y1="200" x2="56" y2="56"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 256 256"><line x1="40" y1="128" x2="216" y2="128"/><line x1="128" y1="40" x2="128" y2="216"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 256 256"><line x1="40" y1="128" x2="216" y2="128"/></symbol>
+    <symbol id="i-ig" viewBox="0 0 256 256"><circle cx="128" cy="128" r="40"/><rect x="32" y="32" width="192" height="192" rx="48"/><circle cx="180" cy="76" r="4" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<header class="header" id="top">
+  <div class="header__inner">
+    <div>
+      <nav class="nav" aria-label="Main">
+        <a href="#new-drop">Shop</a>
+        <a href="#new-drop">New drop</a>
+        <a href="#categories">T-shirts</a>
+        <a href="#categories">Sweatshirts</a>
+        <a href="#categories">Joggers</a>
+      </nav>
+      <button class="util menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
+        <svg class="icon"><use href="#i-list"/></svg>
+      </button>
+    </div>
+    <a class="brand" href="#top" aria-label="Clipbord, home"><span class="brand__logo" id="navLogo"></span></a>
+    <div class="utils">
+      <button class="util" id="searchBtn" aria-expanded="false" aria-controls="searchPanel" aria-label="Search">
+        <svg class="icon"><use href="#i-search"/></svg>
+      </button>
+      <a class="util util--wish" href="#new-drop" id="wishLink" aria-label="Wishlist, nothing saved">
+        <svg class="icon"><use href="#i-heart"/></svg>
+        <span class="count" id="wishCount" hidden>0</span>
+      </a>
+      <button class="util" id="bagBtn" aria-label="Bag, empty" aria-haspopup="dialog">
+        <svg class="icon"><use href="#i-bag"/></svg>
+        <span class="count" id="bagCount" hidden>0</span>
+      </button>
+    </div>
+  </div>
+  <div class="search-panel" id="searchPanel" hidden>
+    <form role="search" id="searchForm">
+      <label class="sr-only" for="q">Search the shop</label>
+      <input id="q" type="search" placeholder="Search hoodies, tees, joggers" autocomplete="off">
+      <button type="button" class="util" id="searchClose" aria-label="Close search"><svg class="icon"><use href="#i-x"/></svg></button>
+    </form>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" aria-label="Main" hidden>
+    <a href="#new-drop">Shop</a>
+    <a href="#new-drop">New drop</a>
+    <a href="#categories">T-shirts</a>
+    <a href="#categories">Sweatshirts</a>
+    <a href="#categories">Joggers</a>
+    <a href="#new-drop" class="m-wish">Wishlist</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" id="hero" aria-labelledby="heroTitle">
+    <div class="hero__stage" id="heroStage">
+      <div class="hero__backdrop" aria-hidden="true"></div>
+      <div class="hero__lamp-clip" aria-hidden="true"><div class="hero__glow"></div></div>
+      <div class="hero__slot" id="heroSlot" aria-hidden="true"></div>
+      <h1 class="sr-only" id="heroTitle">Clipbord: tees, sweatshirts and joggers</h1>
+    </div>
+  </section>
+
+  <section class="fold" aria-labelledby="foldTitle">
+    <img class="fold__img" src="/scratchpad/redesign/img/hoodie-back.jpg" alt="Back of the cream Queue the Cause hoodie, red script above a pool cue">
+    <div class="plaque">
+      <h2 id="foldTitle">Queue the Cause</h2>
+      <p>Red script and a pool cue down the back of a cream hoodie.</p>
+      <a class="btn" href="#product" data-open="queue-hoodie">Shop the hoodie</a>
+    </div>
+  </section>
+
+  <section class="section" id="new-drop" aria-labelledby="dropTitle">
+    <div class="wrap">
+      <header class="head">
+        <h2 id="dropTitle">The new drop</h2>
+        <span class="inlay" aria-hidden="true"><i></i></span>
+        <p>Two hoodies, two tees and the Night Run joggers.</p>
+      </header>
+      <div class="plates" id="plates"></div>
+      <p class="empty" id="emptySearch" hidden></p>
+    </div>
+  </section>
+
+  <section class="section section--deep" id="categories" aria-labelledby="catTitle">
+    <div class="wrap">
+      <header class="head">
+        <h2 id="catTitle">Shop by category</h2>
+        <span class="inlay" aria-hidden="true"><i></i></span>
+      </header>
+      <div class="niches">
+        <a class="niche" href="#new-drop" data-filter="T-shirt">
+          <div class="niche__arch"><div class="niche__rule"><div><div class="niche__img">
+            <img src="https://res.cloudinary.com/dmxf5exhr/image/upload/c_fill,ar_3:4,g_north,w_700,q_auto,f_auto/v1791045516/clipBoard/product-images/uvlkk8bxe9o595jkv8lo.jpg" alt="" loading="lazy">
+          </div></div></div></div>
+          <h3>T-shirts</h3>
+          <p>Two prints on black</p>
+        </a>
+        <a class="niche" href="#new-drop" data-filter="Sweatshirt">
+          <div class="niche__arch"><div class="niche__rule"><div><div class="niche__img">
+            <img src="https://res.cloudinary.com/dmxf5exhr/image/upload/c_fill,ar_3:4,g_north,w_700,q_auto,f_auto/v1791045517/clipBoard/product-images/kz9ekm5nrf5lau34y4yr.jpg" alt="" loading="lazy">
+          </div></div></div></div>
+          <h3>Sweatshirts</h3>
+          <p>Two prints on cream</p>
+        </a>
+        <a class="niche" href="#new-drop" data-filter="Joggers">
+          <div class="niche__arch"><div class="niche__rule"><div><div class="niche__img">
+            <img src="https://res.cloudinary.com/dmxf5exhr/image/upload/c_crop,h_0.8,g_north/c_fill,ar_3:4,w_700,q_auto,f_auto/v1790688386/clipBoard/product-images/uzjktcl7hptklik5u6v2.png" alt="" loading="lazy">
+          </div></div></div></div>
+          <h3>Joggers</h3>
+          <p>Black, with a red stripe down each leg</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="product" aria-labelledby="pdpName">
+    <div class="wrap pdp">
+      <div class="gallery">
+        <div class="thumbs" id="thumbs"></div>
+        <div class="mount on-bone">
+          <div class="plate__frame"><div class="plate__photo" id="pdpPhoto"></div></div>
+        </div>
+      </div>
+      <div class="info">
+        <p class="info__cat" id="pdpCat"></p>
+        <h2 id="pdpName"></h2>
+        <p class="price" id="pdpPrice"></p>
+        <p class="tax">Incl. of all taxes</p>
+        <div class="sizes">
+          <div class="sizes__top">
+            <span class="sizes__label" id="sizeLegend">Size</span>
+            <a class="sizes__guide" href="#sizefit" id="sizeGuideLink">Size guide</a>
+          </div>
+          <div class="sizes__row" role="radiogroup" aria-labelledby="sizeLegend" id="sizes"></div>
+          <p class="sizes__note" id="sizeNote" aria-live="polite"></p>
+        </div>
+        <button class="btn btn--block" id="addBtn" type="button">Add to bag</button>
+        <p class="desc" id="pdpDesc"></p>
+        <div class="disc">
+          <details id="details"><summary>Details <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></summary><div><ul id="pdpDetails"></ul></div></details>
+          <details id="sizefit"><summary>Size and fit <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></summary><div>Sizes run S to XL. For the measurements of a size before you order, write to <a href="mailto:clipbord.in@gmail.com">clipbord.in@gmail.com</a>.</div></details>
+          <details><summary>Shipping <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></summary><div>We ship across India. Delivery options and charges for your pin code show at checkout.</div></details>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <span class="mono" role="img" aria-label="Clipbord monogram"></span>
+  <p class="footer__lede">Sizing, an order or a collab idea? Write to us.</p>
+  <a class="footer__mail" href="mailto:clipbord.in@gmail.com">clipbord.in@gmail.com</a>
+  <div><a class="footer__ig" href="https://instagram.com/clipbord_in" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-ig"/></svg>@clipbord_in</a></div>
+  <ul class="footer__links">
+    <li><a href="#">Shipping</a></li>
+    <li><a href="#">Returns</a></li>
+    <li><a href="#sizefit" data-open-sizefit>Size guide</a></li>
+    <li><a href="mailto:clipbord.in@gmail.com">Contact</a></li>
+    <li><a href="#">About</a></li>
+  </ul>
+  <p class="footer__copy">© 2026 Clipbord</p>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="slip" id="bag" role="dialog" aria-modal="true" aria-labelledby="bagTitle" tabindex="-1">
+  <div class="slip__in on-bone">
+    <div class="slip__head">
+      <h2 id="bagTitle">Your bag</h2>
+      <button class="slip__close" id="bagClose" aria-label="Close bag"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <ul class="lines" id="lines"></ul>
+    <div class="slip__foot" id="bagFoot">
+      <dl class="subtotal"><dt>Subtotal</dt><dd id="subtotal">₹0</dd></dl>
+      <p class="slip__note">Incl. of all taxes. Shipping is worked out at checkout.</p>
+      <button class="btn btn--felt btn--block" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(() => {
+  const STATIC = new URLSearchParams(location.search).has('static');
+  const CDN = 'https://res.cloudinary.com/dmxf5exhr/image/upload/';
+  const img = (path, t = 'w_900,q_auto,f_auto') => CDN + t + '/' + path;
+  const HF = 'v1791045517/clipBoard/product-images/kz9ekm5nrf5lau34y4yr.jpg';
+  const HB = 'v1791045518/clipBoard/product-images/hmuakitbn63bhv949tqi.jpg';
+  const TF = 'v1791045515/clipBoard/product-images/wogrqv5ymxq67izpxoy9.jpg';
+  const TB = 'v1791045516/clipBoard/product-images/uvlkk8bxe9o595jkv8lo.jpg';
+  const JG = 'v1790688386/clipBoard/product-images/uzjktcl7hptklik5u6v2.png';
+  const JOG_T = 'c_crop,h_0.8,g_north/c_fill,ar_4:5,w_900,q_auto,f_auto';
+
+  const PRODUCTS = [
+    { id: 'adhd-hoodie', name: 'ADHD Pool Ball Hoodie', price: 2499, cat: 'Sweatshirt',
+      front: img(HF), back: img(HB),
+      alt: ['Cream hoodie with four pool balls spelling ADHD across the chest', 'Back of the cream hoodie with Queue the Cause in red script'],
+      desc: 'A cream hoodie with four pool balls across the chest, green, red, orange and blue, spelling ADHD. Queue the Cause runs down the back in red script above a pool cue.',
+      details: ['Colour: cream', 'Front: ADHD pool balls', 'Back: Queue the Cause script with a pool cue', 'Hood and front pocket'] },
+    { id: 'queue-hoodie', name: 'Queue the Cause Hoodie', price: 2599, cat: 'Sweatshirt',
+      front: img(HB), back: img(HF),
+      alt: ['Back of the cream hoodie with Queue the Cause in red script above a pool cue', 'Front of the cream hoodie with four pool balls spelling ADHD'],
+      desc: 'A cream hoodie with Queue the Cause in red copperplate script across the back and a pool cue running beneath it. Four pool balls spell ADHD across the chest.',
+      details: ['Colour: cream', 'Back: Queue the Cause script with a pool cue', 'Front: ADHD pool balls', 'Hood and front pocket'] },
+    { id: 'adhd-tee', name: 'ADHD Pool Ball Tee', price: 999, cat: 'T-shirt',
+      front: img(TF), back: img(TB),
+      alt: ['Black tee with four small pool balls spelling ADHD on the chest', 'Back of the black tee with Cue the Chaos in red script'],
+      desc: 'A black tee with four pool balls across the chest, green, red, orange and blue, spelling ADHD. Cue the Chaos runs down the back in red script with a pool cue.',
+      details: ['Colour: black', 'Front: ADHD pool balls', 'Back: Cue the Chaos script with a pool cue', 'Crew neck, short sleeves'] },
+    { id: 'chaos-tee', name: 'Cue the Chaos Tee', price: 1099, cat: 'T-shirt',
+      front: img(TB), back: img(TF),
+      alt: ['Back of the black tee with Cue the Chaos in red script above a pool cue', 'Front of the black tee with four pool balls spelling ADHD'],
+      desc: 'A black tee with Cue the Chaos in red copperplate script across the back and a pool cue beneath it. Four small pool balls spell ADHD on the chest.',
+      details: ['Colour: black', 'Back: Cue the Chaos script with a pool cue', 'Front: ADHD pool balls', 'Crew neck, short sleeves'] },
+    { id: 'night-joggers', name: 'Night Run Joggers', price: 1399, cat: 'Joggers',
+      front: img(JG, JOG_T), back: null,
+      alt: ['Black joggers with a red stripe down each leg and white drawcords'],
+      desc: 'Black joggers with a red stripe running down each leg, white drawcords at the waist and cuffed ankles.',
+      details: ['Colour: black with red side stripes', 'Elastic waist with white drawcords', 'Cuffed ankles'] },
+  ];
+  const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
+  const CAT_LABEL = { 'Sweatshirt': 'Sweatshirts', 'T-shirt': 'T-shirts', 'Joggers': 'Joggers' };
+  const rupees = n => '₹' + n.toLocaleString('en-IN');
+  const $ = s => document.querySelector(s);
+
+  /* ---------- Plates ---------- */
+  const wished = new Set();
+  const platesEl = $('#plates');
+  platesEl.innerHTML = PRODUCTS.map(p => `
+    <article class="plate on-bone" data-id="${p.id}" data-cat="${p.cat}">
+      <div class="plate__frame">
+        <div class="plate__photo">
+          <img src="${p.front}" alt="${p.alt[0]}" loading="lazy">
+          ${p.back ? `<img class="is-back" src="${p.back}" alt="" loading="lazy">` : ''}
+        </div>
+        <button class="wish" type="button" aria-pressed="false" aria-label="Save ${p.name} to wishlist">
+          <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg>
+        </button>
+      </div>
+      <div class="plate__meta">
+        <a class="plate__name" href="#product" data-open="${p.id}">${p.name}</a>
+        <span class="plate__price">${rupees(p.price)}</span>
+        <span class="plate__cat">${CAT_LABEL[p.cat]}</span>
+      </div>
+    </article>`).join('');
+
+  // The heart has to be a filled path when pressed, so swap <use> for the path itself.
+  const heartPath = document.querySelector('#i-heart path').getAttribute('d');
+  platesEl.querySelectorAll('.wish svg').forEach(svg => { svg.setAttribute('viewBox', '0 0 256 256'); svg.innerHTML = `<path d="${heartPath}"/>`; });
+
+  platesEl.addEventListener('click', e => {
+    const btn = e.target.closest('.wish');
+    if (!btn) return;
+    const id = btn.closest('.plate').dataset.id;
+    const on = !wished.has(id);
+    on ? wished.add(id) : wished.delete(id);
+    btn.setAttribute('aria-pressed', String(on));
+    btn.setAttribute('aria-label', (on ? 'Remove ' : 'Save ') + byId[id].name + (on ? ' from wishlist' : ' to wishlist'));
+    const c = $('#wishCount');
+    c.textContent = wished.size; c.hidden = wished.size === 0;
+    $('#wishLink').setAttribute('aria-label', wished.size ? `Wishlist, ${wished.size} saved` : 'Wishlist, nothing saved');
+  });
+
+  /* ---------- Filtering (search and categories) ---------- */
+  function filterPlates(fn, emptyMsg) {
+    let shown = 0;
+    platesEl.querySelectorAll('.plate').forEach(el => {
+      const ok = fn(byId[el.dataset.id]);
+      el.hidden = !ok; if (ok) shown++;
+    });
+    platesEl.classList.toggle('is-filtered', shown !== PRODUCTS.length);
+    const empty = $('#emptySearch');
+    empty.hidden = shown !== 0; empty.textContent = emptyMsg || '';
+  }
+  document.querySelectorAll('[data-filter]').forEach(a => a.addEventListener('click', () => {
+    const cat = a.dataset.filter; filterPlates(p => p.cat === cat);
+  }));
+  document.querySelectorAll('.nav a, .mobile-nav a').forEach(a => a.addEventListener('click', () => {
+    const t = a.textContent.trim();
+    const map = { 'T-shirts': 'T-shirt', 'Sweatshirts': 'Sweatshirt', 'Joggers': 'Joggers' };
+    if (map[t]) filterPlates(p => p.cat === map[t]);
+    else filterPlates(() => true);
+    closeMenu();
+  }));
+
+  const searchBtn = $('#searchBtn'), searchPanel = $('#searchPanel'), q = $('#q');
+  function setSearch(open) {
+    searchPanel.hidden = !open; searchBtn.setAttribute('aria-expanded', String(open));
+    if (open) { closeMenu(); q.focus(); } else { searchBtn.focus(); }
+  }
+  searchBtn.addEventListener('click', () => setSearch(searchPanel.hidden));
+  $('#searchClose').addEventListener('click', () => setSearch(false));
+  q.addEventListener('input', () => {
+    const v = q.value.trim().toLowerCase();
+    filterPlates(p => !v || (p.name + ' ' + p.cat + ' hoodie tee').toLowerCase().includes(v),
+      `Nothing matches "${q.value.trim()}". Try hoodie, tee or joggers.`);
+  });
+  $('#searchForm').addEventListener('submit', e => { e.preventDefault(); $('#new-drop').scrollIntoView({ behavior: 'smooth' }); });
+
+  const menuBtn = $('#menuBtn'), mobileNav = $('#mobileNav');
+  function closeMenu() { mobileNav.hidden = true; menuBtn.setAttribute('aria-expanded', 'false'); menuBtn.setAttribute('aria-label', 'Open menu'); }
+  menuBtn.addEventListener('click', () => {
+    const open = mobileNav.hidden;
+    mobileNav.hidden = !open; menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    if (open) searchPanel.hidden = true;
+  });
+
+  /* ---------- Product detail ---------- */
+  const SIZES = ['S', 'M', 'L', 'XL'], SOLD_OUT = ['XL'];
+  let current = byId['queue-hoodie'], size = 'M';
+
+  function showPhoto(i) {
+    const p = current, srcs = [p.front, p.back].filter(Boolean);
+    $('#pdpPhoto').innerHTML = `<img src="${srcs[i]}" alt="${p.alt[i]}">`;
+    document.querySelectorAll('.thumb').forEach((t, j) => t.setAttribute('aria-pressed', String(i === j)));
+  }
+  function renderPDP(p) {
+    current = p;
+    $('#pdpCat').textContent = CAT_LABEL[p.cat];
+    $('#pdpName').textContent = p.name;
+    $('#pdpPrice').textContent = rupees(p.price);
+    $('#pdpDesc').textContent = p.desc;
+    $('#pdpDetails').innerHTML = p.details.map(d => `<li>${d}</li>`).join('');
+    const views = [p.front, p.back].filter(Boolean);
+    $('#thumbs').innerHTML = views.length > 1 ? views.map((src, i) =>
+      `<button class="thumb on-bone" type="button" aria-pressed="false" aria-label="Show ${i ? 'back' : 'front'} view"><img src="${src}" alt=""></button>`).join('') : '';
+    document.querySelectorAll('.thumb').forEach((t, i) => t.addEventListener('click', () => showPhoto(i)));
+    showPhoto(0);
+  }
+  function renderSizes() {
+    $('#sizes').innerHTML = SIZES.map(s => {
+      const out = SOLD_OUT.includes(s), on = s === size;
+      return `<button class="size" type="button" role="radio" aria-checked="${on}" tabindex="${on ? 0 : -1}" ${out ? 'disabled aria-label="' + s + ', sold out"' : ''} data-size="${s}">${s}</button>`;
+    }).join('');
+    $('#sizeNote').textContent = 'XL is sold out.';
+  }
+  $('#sizes').addEventListener('click', e => {
+    const b = e.target.closest('.size'); if (!b || b.disabled) return;
+    size = b.dataset.size; renderSizes(); $('#sizes').querySelector(`[data-size="${size}"]`).focus();
+  });
+  $('#sizes').addEventListener('keydown', e => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    e.preventDefault();
+    const avail = SIZES.filter(s => !SOLD_OUT.includes(s));
+    const d = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+    size = avail[(avail.indexOf(size) + d + avail.length) % avail.length];
+    renderSizes(); $('#sizes').querySelector(`[data-size="${size}"]`).focus();
+  });
+  document.addEventListener('click', e => {
+    const o = e.target.closest('[data-open]');
+    if (o) { renderPDP(byId[o.dataset.open]); }
+    if (e.target.closest('[data-open-sizefit], #sizeGuideLink')) $('#sizefit').open = true;
+  });
+  renderPDP(current); renderSizes();
+
+  /* ---------- Bag ---------- */
+  const bag = []; // { id, size, qty }
+  const bagEl = $('#bag'), bagBtn = $('#bagBtn');
+  let lastFocus = null;
+  function renderBag() {
+    const lines = $('#lines');
+    if (!bag.length) {
+      lines.innerHTML = `<li class="bag-empty"><p>Your bag is empty.</p><p>Pick a size on any piece and add it here.</p></li>`;
+    } else {
+      lines.innerHTML = bag.map((l, i) => {
+        const p = byId[l.id];
+        return `<li class="line">
+          <div class="line__img"><img src="${p.front}" alt=""></div>
+          <div>
+            <p class="line__name">${p.name}</p>
+            <p class="line__meta">Size ${l.size}</p>
+            <div class="line__row">
+              <div class="stepper" role="group" aria-label="Quantity of ${p.name}">
+                <button type="button" data-step="-1" data-i="${i}" aria-label="Decrease quantity"><svg class="icon"><use href="#i-minus"/></svg></button>
+                <output aria-live="polite">${l.qty}</output>
+                <button type="button" data-step="1" data-i="${i}" aria-label="Increase quantity"><svg class="icon"><use href="#i-plus"/></svg></button>
+              </div>
+              <span class="line__price">${rupees(p.price * l.qty)}</span>
+            </div>
+            <button class="line__remove" type="button" data-remove="${i}">Remove</button>
+          </div>
+        </li>`;
+      }).join('');
+    }
+    const total = bag.reduce((s, l) => s + byId[l.id].price * l.qty, 0);
+    const n = bag.reduce((s, l) => s + l.qty, 0);
+    $('#subtotal').textContent = rupees(total);
+    $('#bagFoot').hidden = !bag.length;
+    const c = $('#bagCount'); c.textContent = n; c.hidden = !n;
+    bagBtn.setAttribute('aria-label', n ? `Bag, ${n} item${n > 1 ? 's' : ''}` : 'Bag, empty');
+  }
+  $('#lines').addEventListener('click', e => {
+    const s = e.target.closest('[data-step]'), r = e.target.closest('[data-remove]');
+    if (s) {
+      const i = +s.dataset.i; bag[i].qty = Math.max(1, Math.min(9, bag[i].qty + +s.dataset.step));
+      renderBag(); $('#lines').querySelector(`[data-i="${i}"][data-step="${s.dataset.step}"]`)?.focus();
+    }
+    if (r) { bag.splice(+r.dataset.remove, 1); renderBag(); $('#bagClose').focus(); }
+  });
+  function openBag() {
+    lastFocus = document.activeElement;
+    document.body.classList.add('bag-open');
+    setTimeout(() => $('#bagClose').focus(), 50);
+  }
+  function closeBag() {
+    if (!document.body.classList.contains('bag-open')) return;
+    document.body.classList.remove('bag-open');
+    lastFocus && lastFocus.focus && lastFocus.focus();
+  }
+  $('#addBtn').addEventListener('click', () => {
+    const hit = bag.find(l => l.id === current.id && l.size === size);
+    hit ? hit.qty++ : bag.push({ id: current.id, size, qty: 1 });
+    renderBag(); openBag();
+  });
+  bagBtn.addEventListener('click', openBag);
+  $('#bagClose').addEventListener('click', closeBag);
+  $('#scrim').addEventListener('click', closeBag);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (document.body.classList.contains('bag-open')) closeBag();
+      else if (!searchPanel.hidden) setSearch(false);
+      else if (!mobileNav.hidden) { closeMenu(); menuBtn.focus(); }
+    }
+    if (e.key === 'Tab' && document.body.classList.contains('bag-open')) {
+      const f = [...bagEl.querySelectorAll('button, a[href]')].filter(x => !x.closest('[hidden]'));
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  renderBag();
+  // Screenshot hook: ?bag opens the bag with the selected piece in it.
+  if (new URLSearchParams(location.search).has('bag')) {
+    document.head.insertAdjacentHTML('beforeend', '<style>.slip,.scrim{transition:none!important}</style>');
+    $('#addBtn').click();
+  }
+
+  /* ---------- Hero: sketch, draw, fill, dock ---------- */
+  const SKETCH = 0.62, REVEAL = 3.9;
+  const slot = $('#heroSlot'), navLogo = $('#navLogo'), header = $('.header');
+
+  function fallback() { navLogo.style.visibility = 'visible'; $('#hero').style.display = 'none'; }
+
+  fetch('/src/assets/clipbord-logo-black.svg').then(r => r.text()).then(svgText => {
+    const d = svgText.match(/ d="([^"]+)"/)[1];
+    const subs = d.split(/(?=M)/);
+    navLogo.innerHTML = `<svg viewBox="0 0 1000 642.7" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/></svg>`;
+    slot.innerHTML = `<svg viewBox="0 0 1000 642.7" aria-hidden="true">
+      <path class="hero-fill" d="${d}" fill="#E8E4DA" fill-rule="evenodd" fill-opacity="0"/>
+      <g fill="none" stroke="#C9A27A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+        ${subs.map(s => `<path class="hero-stroke" d="${s}" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>`).join('')}
+      </g></svg>`;
+    if (!window.gsap || !window.ScrollTrigger) return fallback();
+    initHero();
+  }).catch(fallback);
+
+  function initHero() {
+    gsap.registerPlugin(ScrollTrigger);
+    const root = $('#hero');
+    const strokes = root.querySelectorAll('.hero-stroke');
+    const fill = root.querySelector('.hero-fill');
+    const glow = root.querySelector('.hero__glow');
+
+    const dock = () => {
+      const from = slot.getBoundingClientRect();
+      const to = navLogo.getBoundingClientRect();
+      const scale = gsap.getProperty(slot, 'scale');
+      const left = from.left - gsap.getProperty(slot, 'x');
+      const top = from.top - gsap.getProperty(slot, 'y');
+      return { x: to.left - left, y: to.top - top, scale: to.width / (from.width / scale) };
+    };
+
+    const mm = gsap.matchMedia();
+    mm.add({ any: 'all', reduce: '(prefers-reduced-motion: reduce)' }, ctx => {
+      const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
+      tl.fromTo(strokes, { attr: { 'stroke-dashoffset': SKETCH } }, { attr: { 'stroke-dashoffset': 0 }, duration: 1.2, ease: 'power1.inOut', stagger: 0.07 }, 0)
+        .fromTo(glow, { autoAlpha: 0.55, scale: 0.8 }, { autoAlpha: 1, scale: 1.1, duration: 3, ease: 'power2.out' }, 0)
+        .fromTo(fill, { fillOpacity: 0 }, { fillOpacity: 1, duration: 1.1, ease: 'power2.in' }, 2.2)
+        .fromTo(strokes, { opacity: 1 }, { opacity: 0, duration: 0.8 }, 3)
+        .fromTo(glow, { autoAlpha: 1, scale: 1.1 }, { autoAlpha: 0, scale: 1.6, duration: 1.4, ease: 'power2.in', immediateRender: false }, 3.6)
+        .fromTo('.hero__backdrop', { autoAlpha: 1 }, { autoAlpha: 0, duration: 1, ease: 'power1.inOut' }, REVEAL)
+        .fromTo(slot, { x: 0, y: 0, scale: 1 }, { x: () => dock().x, y: () => dock().y, scale: () => dock().scale, duration: 2.2, ease: 'power3.inOut' }, 3.9)
+        .fromTo(slot, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.01, immediateRender: false }, 6.1)
+        .fromTo(navLogo, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, 6.1)
+        .to({}, { duration: 0.4 });
+
+      if (ctx.conditions.reduce || STATIC) { tl.progress(1); return; }
+
+      ScrollTrigger.create({
+        trigger: '#heroStage',
+        start: () => `top ${header.offsetHeight}px`,
+        end: '+=200%',
+        pin: true,
+        scrub: 1,
+        animation: tl,
+        invalidateOnRefresh: true,
+      });
+    });
+
+    // Load-in: sketch the start of every stroke so the first frame is not empty.
+    if (!STATIC && window.scrollY < 10 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.fromTo(strokes, { attr: { 'stroke-dashoffset': 1 } }, { attr: { 'stroke-dashoffset': SKETCH }, duration: 1.6, ease: 'power2.out', stagger: 0.03, delay: 0.25 });
+    }
+    window.addEventListener('load', () => ScrollTrigger.refresh());
+  }
+})();
+</script>
+</body>
+</html>

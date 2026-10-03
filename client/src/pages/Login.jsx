@@ -1,22 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { axiosInstance } from '../axiosCalls/axios'
-import Logo from '../components/Logo'
+import AuthShell, { SubmitArrow, fieldClass, labelClass, submitClass } from '../components/AuthShell'
 import Toast from '../components/Toast'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { useAuth } from '../context/AuthContext'
-
 
 const INITIAL_FORM = {
   email: '',
   password: '',
 }
-
-const fieldClass =
-  'w-full rounded-md bg-smoke px-4 py-3 text-base text-paper placeholder:text-neutral-500 transition-colors outline-none focus:bg-raised'
-
-const labelClass =
-  'mb-2 block text-sm text-mute'
 
 function Login() {
   const [form, setForm] = useState(INITIAL_FORM)
@@ -41,94 +34,41 @@ function Login() {
       const res = await axiosInstance.get('/customer/me')
       setUser(res.data.userData)
       navigate('/home')
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err)
       setError(getErrorMessage(err, 'Unable to log in. Please try again.'))
-    }
-    finally {
+    } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-ink px-6 py-16 text-paper">
+    <AuthShell
+      title="Log in"
+      intro="Your bag and bookmarks follow you to any device."
+      footer={<>New to Clipbord? <Link to="/signup" className="font-semibold text-fg underline underline-offset-[3px]">Create an account</Link></>}
+    >
       <Toast message={error} onClose={() => setError('')} />
-
-      <div className="mx-auto w-full max-w-sm">
-        <header className="mb-12">
-          <Link to="/home" className="inline-block text-paper transition-colors hover:text-crimson-bright">
-            <Logo className="h-14" />
-          </Link>
-          <h1 className="mt-8 tracking-display text-4xl leading-tight">
-            Welcome back
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-mute">
-            Log in to pick up where you left off.
-          </p>
-        </header>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className={labelClass}>
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-              className={fieldClass}
-            />
+      <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <div>
+          <label htmlFor="email" className={labelClass}>Email</label>
+          <input id="email" name="email" type="email" required autoComplete="email" placeholder="you@example.com" value={form.email} onChange={handleChange} className={fieldClass} />
+        </div>
+        <div>
+          <div className="mb-1.5 flex items-baseline justify-between">
+            <label htmlFor="password" className="text-[13px] font-semibold">Password</label>
+            <button type="button" onClick={() => setShowPassword((prev) => !prev)} className="text-[13px] text-drawer-soft underline-offset-4 hover:text-drawer-fg hover:underline">
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
           </div>
-
-          <div>
-            <div className="mb-2 flex items-baseline justify-between">
-              <label htmlFor="password" className={labelClass + ' mb-0'}>
-                Password
-              </label>
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="text-sm text-mute underline-offset-4 hover:text-paper hover:underline"
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            <input
-              id="password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              required
-              autoComplete="current-password"
-              placeholder="Your password"
-              value={form.password}
-              onChange={handleChange}
-              className={fieldClass}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-md bg-crimson py-4 text-paper transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {submitting ? 'Logging in' : 'Log in'}
-          </button>
-        </form>
-
-        <p className="mt-10 text-sm text-mute">
-          New to Clipbord?{' '}
-          <Link to="/signup" className="text-paper underline decoration-crimson-bright underline-offset-4">
-            Create an account
-          </Link>
-        </p>
-      </div>
-    </div>
+          <input id="password" name="password" type={showPassword ? 'text' : 'password'} required autoComplete="current-password" placeholder="Your password" value={form.password} onChange={handleChange} className={fieldClass} />
+        </div>
+        <button type="submit" disabled={submitting} className={submitClass}>
+          {submitting ? 'Logging in…' : 'Log in'}
+          <SubmitArrow />
+        </button>
+      </form>
+    </AuthShell>
   )
 }
 

@@ -15,7 +15,7 @@ const SKETCH = 0.62
 // fades from here, uncovering the next section as it scrolls up underneath.
 const REVEAL = 3.9
 
-// Scroll-driven hero: the logo is drawn in crimson, fills in cream, then flies into
+// Scroll-driven hero: the logo is drawn in the accent red, fills in the text colour, then flies into
 // the navbar logo's spot (dockTargetRef). The next section is pulled up underneath this
 // one by a stage's height, so it reaches the navbar just as the logo docks.
 // The section sits above the navbar (z-40) so the logo stays in view the whole way there.
@@ -51,9 +51,8 @@ function Hero({ dockTargetRef }) {
         // re-records from()/to()/set() starting values on each refresh, which can leave
         // elements stuck hidden; fromTo never depends on whatever state it finds.
         const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } })
-        tl.fromTo('.hero-hint', { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.3 }, 0)
-          // GSAP rounds the CSS strokeDashoffset to whole pixels, so tween the attribute instead.
-          .fromTo(strokes, { attr: { 'stroke-dashoffset': SKETCH } }, { attr: { 'stroke-dashoffset': 0 }, duration: 1.2, ease: 'power1.inOut', stagger: 0.07 }, 0)
+        // GSAP rounds the CSS strokeDashoffset to whole pixels, so tween the attribute instead.
+        tl.fromTo(strokes, { attr: { 'stroke-dashoffset': SKETCH } }, { attr: { 'stroke-dashoffset': 0 }, duration: 1.2, ease: 'power1.inOut', stagger: 0.07 }, 0)
           .fromTo(glow, { autoAlpha: 0.55, scale: 0.8 }, { autoAlpha: 1, scale: 1.1, duration: 3, ease: 'power2.out' }, 0)
           .fromTo(fill, { fillOpacity: 0 }, { fillOpacity: 1, duration: 1.1, ease: 'power2.in' }, 2.2)
           .fromTo(strokes, { opacity: 1 }, { opacity: 0, duration: 0.8 }, 3)
@@ -107,10 +106,10 @@ function Hero({ dockTargetRef }) {
       <div ref={pinRef} className="relative grid h-[calc(100svh-var(--nav-h,64px))] place-items-center">
         {/* The stage is sized to the small viewport (browser bars showing), so the backdrop
             runs a full large viewport down to cover the strip below it when the bars hide. */}
-        <div aria-hidden="true" className="hero-backdrop absolute inset-0 h-lvh bg-ink" />
+        <div aria-hidden="true" className="hero-backdrop absolute inset-0 h-lvh bg-canvas" />
         {/* The glow grows past the screen edges, so it's clipped to the stage. */}
         <div aria-hidden="true" className="absolute inset-0 grid place-items-center overflow-hidden">
-          <div className="hero-glow size-[70vmin] rounded-full bg-[radial-gradient(closest-side,rgb(179_18_46/0.45),transparent)] opacity-0 blur-xl" />
+          <div className="hero-glow size-[70vmin] rounded-full bg-[radial-gradient(closest-side,color-mix(in_srgb,var(--c-accent)_42%,transparent),transparent)] opacity-0 blur-xl" />
         </div>
 
         <div
@@ -118,8 +117,8 @@ function Hero({ dockTargetRef }) {
           className="relative z-[2] aspect-[1000/642.7] w-[min(76vw,560px)] origin-top-left will-change-transform"
         >
           <svg viewBox="0 0 1000 642.7" aria-hidden="true" className="block size-full">
-            <path className="hero-fill" d={LOGO_D} fill="var(--color-paper)" fillRule="evenodd" fillOpacity="0" />
-            <g fill="none" stroke="var(--color-crimson-bright)" strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round">
+            <path className="hero-fill" d={LOGO_D} fill="var(--c-fg)" fillRule="evenodd" fillOpacity="0" />
+            <g fill="none" stroke="var(--c-accent)" strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round">
               {LOGO_SUBPATHS.map((d, i) => (
                 <path key={i} className="hero-stroke" d={d} pathLength="1" strokeDasharray="1" strokeDashoffset="1" />
               ))}
@@ -129,9 +128,6 @@ function Hero({ dockTargetRef }) {
 
         <h1 className="sr-only">Clipbord: tees, sweatshirts and joggers</h1>
 
-        <p className="hero-hint absolute bottom-5 left-1/2 -translate-x-1/2 text-sm text-mute" aria-hidden="true">
-          Scroll
-        </p>
       </div>
     </section>
   )
