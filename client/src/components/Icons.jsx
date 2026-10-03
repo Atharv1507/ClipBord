@@ -1,5 +1,6 @@
 // Phosphor icons (regular weight, 256 viewBox), one family across the site.
-// Each takes a className for size; colour comes from currentColor.
+// Each takes a className; without a size class in it (h-*, size-*) it's 20px.
+// Colour comes from currentColor.
 const PATHS = {
   search: 'M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z',
   bookmark: 'M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Zm0,177.57-51.77-32.35a8,8,0,0,0-8.48,0L72,209.57V48H184Z',
@@ -20,9 +21,12 @@ const PATHS = {
   instagram: 'M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM176,24H80A56.06,56.06,0,0,0,24,80v96a56.06,56.06,0,0,0,56,56h96a56.06,56.06,0,0,0,56-56V80A56.06,56.06,0,0,0,176,24Zm40,152a40,40,0,0,1-40,40H80a40,40,0,0,1-40-40V80A40,40,0,0,1,80,40h96a40,40,0,0,1,40,40ZM196,72a12,12,0,1,1-12-12A12,12,0,0,1,196,72Z',
 }
 
-export function Icon({ name, className = 'h-5 w-5' }) {
+export function Icon({ name, className = '' }) {
+  // An SVG with no size of its own grows to the browser default, so keep the 20px default
+  // unless the caller sets a height (e.g. className="md:hidden" alone still gets 20px).
+  const sized = /(^|\s)(h|size)-/.test(className) ? className : `h-5 w-5 ${className}`
   return (
-    <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" className={`shrink-0 ${className}`}>
+    <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" className={`shrink-0 ${sized}`}>
       <path d={PATHS[name]} />
     </svg>
   )
