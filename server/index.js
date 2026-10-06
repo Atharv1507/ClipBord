@@ -4,6 +4,7 @@ import mongoose from "mongoose"
 import cookieParser from "cookie-parser"
 import customerRouter from "./routes/customer.route.js"
 import cors from 'cors'
+import helmet from "helmet"
 import productRoutes from "./routes/product.routes.js"
 import cartRoutes from "./routes/cart.routes.js"
 import wishlistRoutes from "./routes/wishlist.routes.js"
@@ -21,6 +22,9 @@ const app=express()
 // Railway sits one proxy in front of us; trust its X-Forwarded-For so req.ip
 // is the real client IP, otherwise every user shares one rate limit bucket
 app.set('trust proxy',1)
+// Standard security headers on every response (nosniff, no framing, HTTPS-only,
+// strict referrer) and no X-Powered-By. First, so even errors and 404s get them.
+app.use(helmet())
 
 mongoose.connect(process.env.dbUrl).then(()=>{
     console.log("DB connected")
