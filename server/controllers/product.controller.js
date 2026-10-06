@@ -1,57 +1,10 @@
+import mongoose from "mongoose";
 import { Product } from "../models/product.model.js";
-import uploadToCloudinary from "../utils/uploadCloudinary.js";
 
 // Allowed values come straight from the schema, so the controller never
 // drifts out of sync with the model if an enum value is added later.
 const CATEGORIES = Product.schema.path("category").enumValues;
 
-export const createProducts = async (req, res) => {
-  try {
-    const { name, price, desc, category } = req.body;
-    let image;
-    if (!name || !desc) {
-      return res.status(400).json({ message: "All fields Required" });
-    }
-    if (!req.file) {
-      return res.status(400).json({ message: "Image required" });
-    }
-    // Form data only carries strings, so sizes arrive as a JSON string
-    // like '{"S":10,"M":4,"L":0,"XL":2}' and are parsed back into an object.
-    let sizes;
-    if (req.body.sizes) {
-      try {
-        sizes = JSON.parse(req.body.sizes);
-      } catch {
-        return res.status(400).json({ message: "Invalid sizes format" });
-      }
-    }
-
-    const uploadedImage = await uploadToCloudinary(req.file.buffer);
-    image = uploadedImage.secure_url;
-
-    const productCreated = {
-      name,
-      description: desc,
-      price,
-      category,
-      image,
-      sizes,
-    };
-
-    const prod = await Product.create(productCreated);
-
-    console.log(prod);
-
-    return res.status(201).json({ message: "Product created", prod });
-  } catch (err) {
-    // Bad input caught by the schema (wrong category, negative size, ...)
-    // is the client's mistake, not a server failure.
-    if (err?.name === "ValidationError") {
-      return res.status(400).json({ message: err.message });
-    }
-    return res.status(500).json({ message: "Internal Error", err });
-  }
-};
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 
@@ -146,7 +99,11 @@ export const getAllProducts = async (req, res) => {
 
     // 6. Every filter is ANDed together. Each one only touches its own
     //    field, so spreading them into one object is the same as $and.
+    // Archived products are hidden from the shop. $ne also matches older
+    // products that have no archived field at all.
+    const activeFilter = { archived: { $ne: true } };
     const filter = {
+      ...activeFilter,
       ...searchFilter,
       ...categoryFilter,
       ...priceFilter,
@@ -156,8 +113,8 @@ export const getAllProducts = async (req, res) => {
     //    OTHER active filter, but not its own. That way ticking "Tshirt" still
     //    shows how many "Joggers" there are, so the user can widen the
     //    selection instead of seeing zeros everywhere.
-    const categoryFacetMatch = { ...searchFilter, ...priceFilter };
-    const priceFacetMatch = { ...searchFilter, ...categoryFilter };
+    const categoryFacetMatch = { ...activeFilter, ...searchFilter, ...priceFilter };
+    const priceFacetMatch = { ...activeFilter, ...searchFilter, ...categoryFilter };
 
     // 8. Fetch this page's products, the total count and the two facets
     //    at the same time, since none of them depends on another.
@@ -228,10 +185,17 @@ export const getAllProducts = async (req, res) => {
 export const getProductById = async (req,res)=>{
   try{
     const productId=req.params.id
-    const prod= await Product.findById(productId)
-    if(!prod){
+    if(!mongoose.isValidObjectId(productId)){
       return res.status(404).json({message:"Product not found"})
     }
+    const found= await Product.findById(productId).lean()
+    if(!found){
+      return res.status(404).json({message:"Product not found"})
+    }
+    // Archived products still load (old links, wishlists, past orders) with
+    // archived: true, so the page can say "No longer available".
+    // Products from before galleries show their one image as the gallery.
+    const prod={...found, archived:found.archived===true, images:found.images?.length?found.images:[{url:found.image}]}
     return res.status(200).json({message:"Product Found", prod})
   }
   catch(err){

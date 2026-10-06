@@ -1,10 +1,9 @@
 import express from "express";
-import { createProducts, getAllProducts, getProductById } from "../controllers/product.controller.js";
-import upload from "../middlewares/upload.middleware.js";
+import { getAllProducts, getProductById } from "../controllers/product.controller.js";
 
 const productRoutes=express.Router()
 
-productRoutes.post('/create',upload.single('image'),createProducts)
+// Products are created and edited only from the admin dashboard (/admin/products).
 productRoutes.get('/getAll',getAllProducts)
 productRoutes.get('/getproduct/:id',getProductById)
 export default productRoutes

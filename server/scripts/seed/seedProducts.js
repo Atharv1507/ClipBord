@@ -1,13 +1,14 @@
-// Adds the sample catalogue in products.json through the real create endpoint
-// (POST /products/create), exactly like the admin form would: multipart form data
-// with the image file, name, price, desc, category and sizes (as a JSON string).
+// Adds the sample catalogue in products.json through the admin create endpoint
+// (POST /admin/products), exactly like the dashboard's product form: it logs in
+// as the admin first, then sends multipart form data with the image file(s),
+// name, price, description, category and sizes (as a JSON string).
 //
-//   node scripts/seed/seedProducts.js                  # server must be running
-//   API_URL=http://localhost:8000 node scripts/seed/seedProducts.js
+//   ADMIN_EMAIL=... ADMIN_PASSWORD=... node scripts/seed/seedProducts.js   # server must be running
+//   API_URL=http://localhost:8000 ADMIN_EMAIL=... ADMIN_PASSWORD=... node scripts/seed/seedProducts.js
 //
 // Images come from images/<slug>.png (run generateImages.py first). A product whose
-// name is already in the shop is skipped, so running this twice doesn't duplicate
-// anything. The created ids are saved to seed-output.json.
+// name already exists (archived ones included) is skipped, so running this twice
+// doesn't duplicate anything. The created ids are saved to seed-output.json.
 
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -16,14 +17,36 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
 
+// Set after login: the admin cookie plus the header csrfGuard requires.
+let headers = { "X-Requested-With": "XMLHttpRequest" };
+
+async function loginAsAdmin() {
+  const { ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    throw new Error("Set ADMIN_EMAIL and ADMIN_PASSWORD to seed products");
+  }
+  const res = await fetch(new URL("/customer/login", API_URL), {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.admin) {
+    throw new Error(`Admin login failed (${res.status} ${data.message ?? ""})`);
+  }
+  // Node's fetch has no cookie jar, so the cookie is carried by hand.
+  const cookie = res.headers.getSetCookie().find((c) => c.startsWith("adminToken="));
+  if (!cookie) throw new Error("Admin login returned no adminToken cookie");
+  headers = { ...headers, Cookie: cookie.split(";")[0] };
+}
+
 async function alreadyExists(name) {
-  const url = new URL("/products/getAll", API_URL);
+  const url = new URL("/admin/products", API_URL);
   url.searchParams.set("search", name);
-  url.searchParams.set("limit", "50");
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`getAll failed with ${res.status}`);
+  const res = await fetch(url, { headers });
+  if (!res.ok) throw new Error(`admin product list failed with ${res.status}`);
   const data = await res.json();
-  return data.Allproducts.find((p) => p.name === name) ?? null;
+  return data.products.find((p) => p.name === name) ?? null;
 }
 
 async function createProduct(product) {
@@ -32,20 +55,22 @@ async function createProduct(product) {
   const form = new FormData();
   form.append("name", product.name);
   form.append("price", String(product.price));
-  form.append("desc", product.desc);
+  form.append("description", product.desc);
   form.append("category", product.category);
   form.append("sizes", JSON.stringify(product.sizes));
-  form.append("image", new Blob([image], { type: "image/png" }), `${product.slug}.png`);
+  // Repeat "images" once per photo; the server reads them as an array.
+  form.append("images", new Blob([image], { type: "image/png" }), `${product.slug}.png`);
 
-  const res = await fetch(new URL("/products/create", API_URL), { method: "POST", body: form });
+  const res = await fetch(new URL("/admin/products", API_URL), { method: "POST", headers, body: form });
   const data = await res.json().catch(() => ({}));
   if (res.status !== 201) {
     throw new Error(`${res.status} ${data.message ?? JSON.stringify(data)}`);
   }
-  return data.prod;
+  return data.product;
 }
 
 async function main() {
+  await loginAsAdmin();
   const products = JSON.parse(await readFile(path.join(HERE, "products.json"), "utf8"));
   const results = [];
   let failed = 0;
@@ -76,4 +101,7 @@ async function main() {
   if (failed) process.exitCode = 1;
 }
 
-main();
+main().catch((err) => {
+  console.error(err.message);
+  process.exitCode = 1;
+});

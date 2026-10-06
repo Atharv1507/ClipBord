@@ -7,6 +7,7 @@ export const useBag = () => useContext(BagContext)
 
 // Stock can drop after something was added, so warn before checkout.
 export function stockWarning(item) {
+  if (item.product?.archived) return 'No longer available. Remove it to check out.'
   if (item.available === 0) return `Sold out in ${item.size}. Remove it to check out.`
   if (item.available < item.quantity) return `Only ${item.available} left in ${item.size}. Lower the quantity to check out.`
   return ''

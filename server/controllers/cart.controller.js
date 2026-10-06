@@ -19,6 +19,10 @@ export const addToCart = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+    // Hidden from the shop by the admin, so it can't be bought any more.
+    if (product.archived) {
+      return res.status(404).json({ message: "This product is no longer available" });
+    }
     let cart = await Cart.findOne({ customer: req.customer._id });
     if (!cart) {
       cart = new Cart({ customer: req.customer._id, items: [] });
@@ -116,7 +120,7 @@ export const getCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ customer: req.customer._id }).populate(
       "items.product",
-      "name price image category sizes"
+      "name price image category sizes archived"
     );
 
     // No cart yet is just an empty cart, not an error.
@@ -139,11 +143,13 @@ export const getCart = async (req, res) => {
         price: item.product.price,
         image: item.product.image,
         category: item.product.category,
+        archived: item.product.archived === true,
       },
       size: item.size,
       quantity: item.quantity,
       // Stock can drop after the item was added, so the page can warn before checkout.
-      available: item.product.sizes[item.size],
+      // An archived product counts as sold out, so checkout is blocked until it's removed.
+      available: item.product.archived ? 0 : item.product.sizes[item.size],
       lineTotal: item.product.price * item.quantity,
     }));
 

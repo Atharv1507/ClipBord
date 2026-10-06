@@ -24,12 +24,15 @@ export const addToWishlist = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+    if (product.archived) {
+      return res.status(404).json({ message: "This product is no longer available" });
+    }
 
     // upsert creates the wishlist on the first save; $addToSet skips the id if it's already there.
     const wishlist = await Wishlist.findOneAndUpdate(
       { customer: req.customer._id },
       { $addToSet: { products: productId } },
-      { new: true, upsert: true }
+      { returnDocument: "after", upsert: true }
     );
 
     return res.status(200).json({ message: "Added to wishlist", ids: wishlist.products });
@@ -49,7 +52,7 @@ export const removeFromWishlist = async (req, res) => {
     const wishlist = await Wishlist.findOneAndUpdate(
       { customer: req.customer._id },
       { $pull: { products: productId } },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     return res.status(200).json({ message: "Removed from wishlist", ids: wishlist ? wishlist.products : [] });
@@ -63,7 +66,8 @@ export const getWishlist = async (req, res) => {
   try {
     const wishlist = await Wishlist.findOne({ customer: req.customer._id }).populate(
       "products",
-      "name price image category"
+      // archived lets the page mark products that are no longer for sale
+      "name price image category archived"
     );
 
     if (!wishlist) {
