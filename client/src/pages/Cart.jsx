@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Toast from '../components/Toast'
@@ -15,6 +15,7 @@ const gutter = 'px-4 md:px-[clamp(16px,2.2vw,32px)]'
 // Shares its state with the bag drawer (BagContext), so both always agree.
 function Cart() {
   const { cart, status, error, setError, retry, busyId, increase, decrease, remove } = useBag()
+  const navigate = useNavigate()
   useSmoothScroll()
 
   useEffect(() => {
@@ -24,8 +25,6 @@ function Cart() {
     }
   }, [])
 
-  // TODO (later): checkout needs the orders model and route. Until then the button stays disabled.
-  const checkoutReady = false
   const hasStockIssue = cart.items.some((item) => stockWarning(item))
   const isEmpty = status === 'ready' && cart.items.length === 0
 
@@ -136,12 +135,12 @@ function Cart() {
                     <dd className="text-2xl font-semibold tabular-nums">{formatPrice(cart.subtotal)}</dd>
                   </div>
                 </dl>
-                <button type="button" disabled={!checkoutReady || hasStockIssue} className="mt-6 flex h-[52px] w-full items-center justify-between rounded-full bg-accent pl-6 pr-2 font-semibold text-on-accent disabled:cursor-not-allowed disabled:opacity-45">
+                <button type="button" onClick={() => navigate('/checkout')} disabled={hasStockIssue} className="mt-6 flex h-[52px] w-full items-center justify-between rounded-full bg-accent pl-6 pr-2 font-semibold text-on-accent disabled:cursor-not-allowed disabled:opacity-45">
                   Checkout
                   <span className="grid h-9 w-9 place-items-center rounded-full bg-on-accent/15"><Icon name="arrow" className="h-4 w-4" /></span>
                 </button>
                 <p className="mt-3 text-center text-[13px] text-panel-soft">
-                  {hasStockIssue ? 'Fix the items marked above to check out.' : 'Checkout is coming soon.'}
+                  {hasStockIssue ? 'Fix the items marked above to check out.' : 'Payments are secured by Razorpay.'}
                 </p>
                 <Link to="/catalogue" className="mt-3 block text-center text-sm underline underline-offset-4">Keep shopping</Link>
               </aside>

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { stockWarning, useBag } from '../context/bag'
 import { formatPrice } from '../utils/product'
@@ -7,11 +7,12 @@ import { Icon } from './Icons'
 
 // The bag, sliding in from the right over any page. A native modal <dialog> handles
 // focus trapping, Escape and hiding the page from screen readers; clicking the dimmed
-// backdrop also closes it. Checkout waits on the orders API, so it stays disabled.
+// backdrop also closes it.
 function BagDrawer() {
   const { user } = useAuth()
   const { cart, status, error, retry, busyId, open, closeBag, increase, decrease, remove } = useBag()
   const dialogRef = useRef(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -157,7 +158,11 @@ function BagDrawer() {
           <p className="text-[13px] text-drawer-soft">Incl. of all taxes. Shipping at checkout.</p>
           <button
             type="button"
-            disabled
+            onClick={() => {
+              closeBag()
+              navigate('/checkout')
+            }}
+            disabled={count === 0 || hasStockIssue}
             className="mt-4 flex h-[52px] w-full items-center justify-between rounded-full bg-accent pl-6 pr-2 font-semibold text-on-accent disabled:opacity-45"
           >
             Checkout
@@ -166,7 +171,7 @@ function BagDrawer() {
             </span>
           </button>
           <p className="mt-2 text-center text-[13px] text-drawer-soft">
-            {hasStockIssue ? 'Fix the items marked above to check out.' : 'Checkout is coming soon.'}{' '}
+            {hasStockIssue ? 'Fix the items marked above to check out.' : 'Payments are secured by Razorpay.'}{' '}
             {count > 0 && (
               <Link to="/cart" onClick={closeBag} className="text-drawer-fg underline underline-offset-[3px]">
                 View bag

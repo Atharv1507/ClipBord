@@ -9,6 +9,8 @@ import Catalogue from './pages/Catalogue'
 import NotFound from './pages/NotFound'
 import Cart from './pages/Cart'
 import Wishlist from './pages/Wishlist'
+import Checkout from './pages/Checkout'
+import Orders from './pages/Orders'
 import { AuthProvider } from './context/AuthContext'
 import { BagProvider } from './context/BagContext'
 import BagDrawer from './components/BagDrawer'
@@ -29,6 +31,8 @@ function App() {
             <Route path='/about' element={<About />} />
             <Route path='/catalogue' element={<Catalogue />} />
             <Route path='/cart' element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+            <Route path='/checkout' element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path='/orders' element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path='/wishlist' element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
             <Route path='/bookmarks' element={<Navigate to='/wishlist' replace />} />
             <Route path='*' element={<NotFound />} />

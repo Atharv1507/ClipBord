@@ -95,6 +95,9 @@ function AccountMenu({ user, onLogout, onOpenChange }) {
               {user.email && <p className="truncate text-[13px] text-drawer-soft">{user.email}</p>}
             </div>
           </div>
+          <Link role="menuitem" to="/orders" onClick={() => setOpen(false)} className={item}>
+            <Icon name="list" className="h-[18px] w-[18px]" /> Orders
+          </Link>
           <Link role="menuitem" to="/wishlist" onClick={() => setOpen(false)} className={item}>
             <Icon name="bookmark" className="h-[18px] w-[18px]" /> Bookmarks
           </Link>
@@ -146,6 +149,11 @@ function MenuSheet({ open, onClose, onSearch, onLogout, user }) {
           <Link to="/wishlist" onClick={onClose} className="inline-flex h-[52px] items-center gap-2.5 rounded-full border-[1.5px] border-line-strong px-6 font-semibold">
             <Icon name="bookmark" /> Bookmarks
           </Link>
+          {user && (
+            <Link to="/orders" onClick={onClose} className="inline-flex h-[52px] items-center gap-2.5 rounded-full border-[1.5px] border-line-strong px-6 font-semibold">
+              <Icon name="list" /> Orders
+            </Link>
+          )}
           {user ? (
             <button type="button" onClick={() => { onClose(); onLogout() }} className="inline-flex h-[52px] items-center gap-2.5 rounded-full border-[1.5px] border-line-strong px-6 font-semibold">
               <Icon name="logout" /> Log out
