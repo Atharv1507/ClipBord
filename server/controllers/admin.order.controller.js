@@ -43,7 +43,11 @@ const searchFilter = (raw) => {
 // asked for, so the list is what was actually paid.
 export const listOrders = async (req, res) => {
   try {
-    const { paymentStatus, fulfillmentStatus, search } = req.query;
+    // The dashboard sends every filter, with "" meaning "any", so blanks count as not set.
+    const blankToUndefined = (value) => (value === "" ? undefined : value);
+    const paymentStatus = blankToUndefined(req.query.paymentStatus);
+    const fulfillmentStatus = blankToUndefined(req.query.fulfillmentStatus);
+    const { search } = req.query;
 
     if (paymentStatus !== undefined && !PAYMENT_STATUSES.includes(paymentStatus)) {
       return res.status(400).json({ message: "Invalid payment status" });
