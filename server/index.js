@@ -10,6 +10,9 @@ import wishlistRoutes from "./routes/wishlist.routes.js"
 import orderRoutes from "./routes/order.routes.js"
 import webhookRoutes from "./routes/webhook.routes.js"
 import { startReconcileJob } from "./jobs/reconcileOrders.js"
+import adminRoutes from "./routes/admin.routes.js"
+import { warnIfAdminEmailTaken } from "./utils/adminConfig.js"
+import { notFound } from "./utils/notFound.js"
 import { csrfGuard } from "./middlewares/csrfGuard.js"
 import { apiLimiter } from "./middlewares/rateLimit.js"
 
@@ -23,6 +26,7 @@ mongoose.connect(process.env.dbUrl).then(()=>{
     console.log("DB connected")
     // Catches up any payment that both verify and the webhook missed
     startReconcileJob()
+    warnIfAdminEmailTaken().catch((err)=>console.log(err))
 }).catch((err)=>{
     console.log(err)
 })
@@ -48,6 +52,7 @@ app.use('/products',productRoutes)
 app.use('/cart',cartRoutes)
 app.use('/wishlist',wishlistRoutes)
 app.use('/orders',orderRoutes)
+app.use('/admin',adminRoutes)
 
 app.get('/health',(req,res)=>{
     // readyState 1 = connected
@@ -56,6 +61,17 @@ app.get('/health',(req,res)=>{
     }
     res.status(200).json({message:'ok'})
 })
+// Last: anything no route matched. JSON instead of Express's HTML page, and
+// the same body admin routes send to non-admins.
+app.use(notFound)
+
+// Errors thrown by middleware (e.g. malformed JSON) as JSON too.
+app.use((err,req,res,next)=>{
+    const status=err.status||err.statusCode||500
+    if(status>=500) console.log(err)
+    res.status(status).json({message:status>=500?'Internal server error':err.message})
+})
+
 app.listen(process.env.PORT,()=>{
     console.log('Listening on port',process.env.PORT)
 })
