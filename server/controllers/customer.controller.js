@@ -2,6 +2,8 @@ import jwt from "jsonwebtoken";
 import customer from "../models/customer.model.js";
 import { genToken } from "../utils/genToken.js";
 import { hashPass,checkPass } from "../utils/hashPass.js";
+import { adminConfig, adminCookieOptions, isAdminEmail } from "../utils/adminConfig.js";
+import { getAdminTokenVersion } from "../models/adminSession.model.js";
 
 const cookieOptions = {
     httpOnly: true,
@@ -9,6 +11,13 @@ const cookieOptions = {
     sameSite: 'none', // client and API are on different domains in prod
     maxAge: 10 * 24 * 60 * 60 * 1000 // 10 days, same as the JWT expiry
 }
+
+// clearCookie needs the same options the cookie was set with, minus maxAge
+const { maxAge: _customerMaxAge, ...clearCookieOptions } = cookieOptions
+
+// The same reply for a wrong customer or admin password, so a failed login
+// never hints which email is the admin's.
+const WRONG_PASSWORD = { message: "Wrong password" }
 
 export const registerCustomer= async (req,res)=>{
     try{
@@ -20,8 +29,11 @@ export const registerCustomer= async (req,res)=>{
         if(password.length<=6){
             return res.status(400).json({message:"Password must be greater than 6 characters"})
         }
+        // The admin email is reserved; answer exactly like an existing account.
+        if(isAdminEmail(email)){
+            return res.status(409).json({message:"User already exists"})
+        }
         const emailExists=await customer.findOne({email})
-        console.log(emailExists)
         if(emailExists){
             return res.status(409).json({message:"User already exists"})
         }
@@ -49,6 +61,30 @@ export const loginCustomer= async(req,res)=>{
         if(!email ||!password){
             return res.status(400).json("All fields required")
         }
+        // bcrypt throws on non-strings, and an object here could be a query operator
+        if(typeof email!=='string' || typeof password!=='string'){
+            return res.status(400).json({message:"Invalid email or password"})
+        }
+
+        // The admin isn't a customer document: its credentials live in env vars.
+        // Logging in with them opens the dashboard instead of the shop.
+        if(isAdminEmail(email)){
+            const correctAdminPass=await checkPass(password,adminConfig.passwordHash)
+            if(!correctAdminPass){
+                return res.status(401).json(WRONG_PASSWORD)
+            }
+            const adminToken=jwt.sign(
+                {role:'admin',v:await getAdminTokenVersion()},
+                adminConfig.jwtSecret,
+                {algorithm:'HS256',expiresIn:'8h'}
+            )
+            res.cookie('adminToken',adminToken,adminCookieOptions)
+            // A shopper session left in this browser would make the shop
+            // still look logged in as that customer.
+            res.clearCookie('token',clearCookieOptions)
+            return res.status(200).json({message:"Admin logged in",admin:true})
+        }
+
         const isCustomer=await customer.findOne({email}).select('+password')
         
        if (!isCustomer) {
@@ -57,7 +93,7 @@ export const loginCustomer= async(req,res)=>{
         const correctPass=await checkPass(password,isCustomer.password) 
         
         if(!correctPass){
-            return res.status(401).json({message:"Wrong password"})
+            return res.status(401).json(WRONG_PASSWORD)
         }
         const token=genToken(isCustomer._id,isCustomer.tokenVersion)
 
@@ -85,7 +121,7 @@ export const logoutCustomer = async (req, res) => {
                 // token already expired or invalid, nothing to revoke
             }
         }
-        res.clearCookie('token', cookieOptions)
+        res.clearCookie('token', clearCookieOptions)
         return res.status(200).json({ message: "User Logged Out" })
     }
     catch (error) {
