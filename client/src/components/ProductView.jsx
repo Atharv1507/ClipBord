@@ -16,12 +16,17 @@ gsap.registerPlugin(useGSAP, SplitText)
 // A size with this many left or fewer says how many.
 const SHOW_COUNT_BELOW = 5
 
-// The product page body: the photo on the left, the details on the right, sticky beside
-// it on wide screens. On arrival the photo wipes up into view, the name rises line by
+// The product page body: the photos on the left, the details on the right, sticky beside
+// them on wide screens. On arrival the photo wipes up into view, the name rises line by
 // line, and the rest drops in after it.
 function ProductView({ product }) {
   const rootRef = useRef(null)
   const titleRef = useRef(null)
+  const thumbsRef = useRef(null)
+  // Products from before galleries only have `image`.
+  const photos = product.images?.length ? product.images : [{ url: product.image }]
+  const [active, setActive] = useState(0)
+  const photo = photos[Math.min(active, photos.length - 1)]
   const [size, setSize] = useState('')
   const [status, setStatus] = useState('idle') // 'idle' | 'adding'
   const [message, setMessage] = useState('')
@@ -31,6 +36,9 @@ function ProductView({ product }) {
   const [loginFor, setLoginFor] = useState(null)
   const { saved, toggle } = useWishlist(product._id)
   const stock = product.sizes ?? {}
+  // Archived: taken off the shop, but the page still answers for old links,
+  // bookmarks and past orders.
+  const retired = Boolean(product.archived)
   const soldOut = SIZES.every((s) => !stock[s])
   const label = CATEGORY_LABELS[product.category] ?? product.category
 
@@ -97,6 +105,17 @@ function ProductView({ product }) {
     }
   }
 
+  // Arrow keys move along the thumbnails (one tab stop for the whole strip).
+  function onThumbKey(e) {
+    const last = photos.length - 1
+    const to = { ArrowRight: active + 1, ArrowDown: active + 1, ArrowLeft: active - 1, ArrowUp: active - 1, Home: 0, End: last }[e.key]
+    if (to === undefined) return
+    e.preventDefault()
+    const next = Math.max(0, Math.min(last, to))
+    setActive(next)
+    thumbsRef.current?.querySelectorAll('button')[next]?.focus()
+  }
+
   const left = size ? stock[size] : 0
   let note = ''
   if (soldOut) note = 'Sold out in every size. Bookmark it to find it again when it restocks.'
@@ -110,8 +129,33 @@ function ProductView({ product }) {
     <article ref={rootRef} className="grid items-start md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
       {/* The top 82% of the 4:5 photo, as on the cards: the older catalogue images print the
           product name along the bottom. */}
-      <div data-photo className="relative aspect-[1/1.025] overflow-hidden bg-photo">
-        <img src={product.image} alt={product.name} className="aspect-[4/5] w-full object-cover" />
+      <div className="min-w-0">
+        <div data-photo className="relative aspect-[1/1.025] overflow-hidden bg-photo">
+          <img
+            src={photo.url}
+            alt={photos.length > 1 ? `${product.name}, photo ${active + 1} of ${photos.length}` : product.name}
+            className="aspect-[4/5] w-full object-cover"
+          />
+        </div>
+        {photos.length > 1 && (
+          <div ref={thumbsRef} role="group" aria-label="Product photos" onKeyDown={onThumbKey} className="flex gap-2 overflow-x-auto px-4 pt-3 md:px-[clamp(16px,2.2vw,32px)]">
+            {photos.map((p, i) => (
+              <button
+                key={p.publicId ?? p.url}
+                type="button"
+                onClick={() => setActive(i)}
+                tabIndex={i === active ? 0 : -1}
+                aria-label={`Show image ${i + 1} of ${photos.length}`}
+                aria-current={i === active ? 'true' : undefined}
+                className={`aspect-[4/5] w-16 shrink-0 overflow-hidden rounded-[10px] bg-photo outline-offset-2 transition-shadow focus-visible:outline-2 focus-visible:outline-fg ${
+                  i === active ? 'shadow-[0_0_0_2px_var(--c-canvas),0_0_0_4px_var(--c-fg)]' : 'opacity-70 hover:opacity-100'
+                }`}
+              >
+                <img src={p.url} alt="" className="h-full w-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-[22px] px-4 pb-4 pt-7 md:sticky md:top-[var(--nav-h,68px)] md:max-w-[600px] md:px-[clamp(24px,4.5vw,72px)] md:pb-12 md:pt-10">
@@ -124,67 +168,83 @@ function ProductView({ product }) {
           <span className="text-[13px] text-fg-soft">Incl. of all taxes</span>
         </p>
 
-        <fieldset data-sizes data-reveal disabled={soldOut} className="min-w-0">
-          <legend className="mb-3 text-sm font-semibold">Size</legend>
-          <div className="flex flex-wrap gap-2">
-            {SIZES.map((s) => {
-              const out = !stock[s]
-              const picked = size === s
-              return (
-                <label
-                  key={s}
-                  className={`grid h-12 min-w-[66px] place-items-center rounded-full border-[1.5px] px-4 text-[15px] font-semibold transition-[border-color,background-color,color,box-shadow] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[6px] has-[:focus-visible]:outline-fg ${
-                    out
-                      ? 'cursor-not-allowed border-dashed border-line-strong text-fg-soft line-through'
-                      : picked
-                        ? 'border-fg bg-fg text-canvas shadow-[0_0_0_2px_var(--c-canvas),0_0_0_4px_var(--c-accent)]'
-                        : 'cursor-pointer border-line-strong hover:border-fg'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="size"
-                    value={s}
-                    checked={picked}
-                    disabled={out}
-                    onChange={() => {
-                      setSize(s)
-                      setMessage('')
-                    }}
-                    className="sr-only"
-                  />
-                  {s}
-                  {out && <span className="sr-only">, sold out</span>}
-                </label>
-              )
-            })}
+        {retired ? (
+          <div data-reveal className="rounded-panel bg-panel p-5 text-panel-fg">
+            <p className="font-semibold">No longer available</p>
+            <p className="mt-1 text-sm text-panel-soft">This piece has been retired from the shop.</p>
+            <div className="mt-4 flex flex-wrap items-center gap-4">
+              <Link to="/catalogue" className="inline-flex h-11 items-center rounded-full bg-accent px-5 font-semibold text-on-accent">Shop all</Link>
+              {/* Saved before it was retired: let them clear it. */}
+              {saved && (
+                <button type="button" onClick={handleBookmark} className="text-sm underline underline-offset-4">Remove from bookmarks</button>
+              )}
+            </div>
           </div>
-          {note && <p className="mt-2.5 text-[13px] text-fg-soft">{note}</p>}
-        </fieldset>
+        ) : (
+          <>
+            <fieldset data-sizes data-reveal disabled={soldOut} className="min-w-0">
+              <legend className="mb-3 text-sm font-semibold">Size</legend>
+              <div className="flex flex-wrap gap-2">
+                {SIZES.map((s) => {
+                  const out = !stock[s]
+                  const picked = size === s
+                  return (
+                    <label
+                      key={s}
+                      className={`grid h-12 min-w-[66px] place-items-center rounded-full border-[1.5px] px-4 text-[15px] font-semibold transition-[border-color,background-color,color,box-shadow] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[6px] has-[:focus-visible]:outline-fg ${
+                        out
+                          ? 'cursor-not-allowed border-dashed border-line-strong text-fg-soft line-through'
+                          : picked
+                            ? 'border-fg bg-fg text-canvas shadow-[0_0_0_2px_var(--c-canvas),0_0_0_4px_var(--c-accent)]'
+                            : 'cursor-pointer border-line-strong hover:border-fg'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="size"
+                        value={s}
+                        checked={picked}
+                        disabled={out}
+                        onChange={() => {
+                          setSize(s)
+                          setMessage('')
+                        }}
+                        className="sr-only"
+                      />
+                      {s}
+                      {out && <span className="sr-only">, sold out</span>}
+                    </label>
+                  )
+                })}
+              </div>
+              {note && <p className="mt-2.5 text-[13px] text-fg-soft">{note}</p>}
+            </fieldset>
 
-        <div data-reveal className="flex gap-2.5">
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={soldOut || status === 'adding'}
-            className="group flex h-[58px] flex-1 items-center justify-between rounded-full bg-accent pl-7 pr-2 text-base font-semibold text-on-accent transition-shadow hover:shadow-[0_10px_30px_-12px_var(--c-accent)] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none"
-          >
-            {soldOut ? 'Sold out' : status === 'adding' ? 'Adding…' : 'Add to bag'}
-            <span className="grid h-[42px] w-[42px] place-items-center rounded-full bg-on-accent/15 transition-transform duration-500 ease-spring group-hover:translate-x-0.5 group-hover:-translate-y-px">
-              <Icon name="plus" className="h-4 w-4" />
-            </span>
-          </button>
-          {/* Not disabled when sold out: saving it is how you come back when it restocks. */}
-          <button
-            type="button"
-            onClick={handleBookmark}
-            aria-pressed={saved}
-            aria-label={saved ? `Remove ${product.name} from bookmarks` : `Bookmark ${product.name}`}
-            className="grid h-[58px] w-[58px] shrink-0 place-items-center rounded-full border-[1.5px] border-line-strong transition-colors hover:border-fg"
-          >
-            <Icon name={saved ? 'bookmarkFill' : 'bookmark'} className={`h-5 w-5 ${saved ? 'text-accent-fg' : ''}`} />
-          </button>
-        </div>
+            <div data-reveal className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={handleAdd}
+                disabled={soldOut || status === 'adding'}
+                className="group flex h-[58px] flex-1 items-center justify-between rounded-full bg-accent pl-7 pr-2 text-base font-semibold text-on-accent transition-shadow hover:shadow-[0_10px_30px_-12px_var(--c-accent)] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none"
+              >
+                {soldOut ? 'Sold out' : status === 'adding' ? 'Adding…' : 'Add to bag'}
+                <span className="grid h-[42px] w-[42px] place-items-center rounded-full bg-on-accent/15 transition-transform duration-500 ease-spring group-hover:translate-x-0.5 group-hover:-translate-y-px">
+                  <Icon name="plus" className="h-4 w-4" />
+                </span>
+              </button>
+              {/* Not disabled when sold out: saving it is how you come back when it restocks. */}
+              <button
+                type="button"
+                onClick={handleBookmark}
+                aria-pressed={saved}
+                aria-label={saved ? `Remove ${product.name} from bookmarks` : `Bookmark ${product.name}`}
+                className="grid h-[58px] w-[58px] shrink-0 place-items-center rounded-full border-[1.5px] border-line-strong transition-colors hover:border-fg"
+              >
+                <Icon name={saved ? 'bookmarkFill' : 'bookmark'} className={`h-5 w-5 ${saved ? 'text-accent-fg' : ''}`} />
+              </button>
+            </div>
+          </>
+        )}
         <p role="status" className="-mt-2 min-h-5 text-sm text-accent-fg">{message}</p>
 
         {product.description && (

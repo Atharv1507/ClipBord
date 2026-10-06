@@ -11,6 +11,7 @@ import Cart from './pages/Cart'
 import Wishlist from './pages/Wishlist'
 import Checkout from './pages/Checkout'
 import Orders from './pages/Orders'
+import AdminGate from './admin/AdminGate'
 import { AuthProvider } from './context/AuthContext'
 import { BagProvider } from './context/BagContext'
 import BagDrawer from './components/BagDrawer'
@@ -35,6 +36,8 @@ function App() {
             <Route path='/orders' element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path='/wishlist' element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
             <Route path='/bookmarks' element={<Navigate to='/wishlist' replace />} />
+            {/* Looks like the 404 page to anyone but the admin; the server checks every admin request. */}
+            <Route path='/admin/*' element={<AdminGate />} />
             <Route path='*' element={<NotFound />} />
           </Routes>
           {/* One bag drawer for the whole app; the navbar and Add to bag open it. */}

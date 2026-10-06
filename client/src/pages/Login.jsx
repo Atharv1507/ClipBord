@@ -5,6 +5,7 @@ import AuthShell, { SubmitArrow, fieldClass, labelClass, submitClass } from '../
 import Toast from '../components/Toast'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { useAuth } from '../context/AuthContext'
+import { setAdminHint } from '../utils/adminHint'
 
 const INITIAL_FORM = {
   email: '',
@@ -29,7 +30,14 @@ function Login() {
     setError('')
     setSubmitting(true)
     try {
-      await axiosInstance.post('/customer/login', form)
+      const { data } = await axiosInstance.post('/customer/login', form)
+      // The admin's credentials open the dashboard instead. They're not a
+      // customer, so there's no /customer/me to ask.
+      if (data?.admin) {
+        setAdminHint()
+        navigate('/admin', { replace: true })
+        return
+      }
       // The login response has no user data, so ask who's logged in now that the cookie is set.
       const res = await axiosInstance.get('/customer/me')
       setUser(res.data.userData)
