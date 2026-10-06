@@ -7,6 +7,9 @@ import cors from 'cors'
 import productRoutes from "./routes/product.routes.js"
 import cartRoutes from "./routes/cart.routes.js"
 import wishlistRoutes from "./routes/wishlist.routes.js"
+import orderRoutes from "./routes/order.routes.js"
+import webhookRoutes from "./routes/webhook.routes.js"
+import { startReconcileJob } from "./jobs/reconcileOrders.js"
 import { csrfGuard } from "./middlewares/csrfGuard.js"
 import { apiLimiter } from "./middlewares/rateLimit.js"
 
@@ -18,6 +21,8 @@ app.set('trust proxy',1)
 
 mongoose.connect(process.env.dbUrl).then(()=>{
     console.log("DB connected")
+    // Catches up any payment that both verify and the webhook missed
+    startReconcileJob()
 }).catch((err)=>{
     console.log(err)
 })
@@ -28,6 +33,11 @@ app.use(cors({
     origin:allowedOrigins,
     credentials:true
 }))
+// Razorpay's server calls this, not our client, so it goes first: it needs the
+// raw body (before express.json), has no X-Requested-With (before csrfGuard),
+// and comes from a few Razorpay IPs (before the per-IP limit). Its signature
+// check replaces all three.
+app.use('/payments',webhookRoutes)
 app.use(apiLimiter)
 app.use(express.json())
 app.use(cookieParser())
@@ -37,6 +47,7 @@ app.use('/customer',customerRouter)
 app.use('/products',productRoutes)
 app.use('/cart',cartRoutes)
 app.use('/wishlist',wishlistRoutes)
+app.use('/orders',orderRoutes)
 
 app.get('/health',(req,res)=>{
     // readyState 1 = connected
