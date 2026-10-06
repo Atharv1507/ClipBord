@@ -7,9 +7,14 @@ import cors from 'cors'
 import productRoutes from "./routes/product.routes.js"
 import cartRoutes from "./routes/cart.routes.js"
 import wishlistRoutes from "./routes/wishlist.routes.js"
+import { csrfGuard } from "./middlewares/csrfGuard.js"
+import { apiLimiter } from "./middlewares/rateLimit.js"
 
 dotenv.config()
 const app=express()
+// Railway sits one proxy in front of us; trust its X-Forwarded-For so req.ip
+// is the real client IP, otherwise every user shares one rate limit bucket
+app.set('trust proxy',1)
 
 mongoose.connect(process.env.dbUrl).then(()=>{
     console.log("DB connected")
@@ -23,8 +28,11 @@ app.use(cors({
     origin:allowedOrigins,
     credentials:true
 }))
+app.use(apiLimiter)
 app.use(express.json())
 app.use(cookieParser())
+// after cors() so preflights are answered first; blocks cross-site write requests
+app.use(csrfGuard)
 app.use('/customer',customerRouter)
 app.use('/products',productRoutes)
 app.use('/cart',cartRoutes)

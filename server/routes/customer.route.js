@@ -1,11 +1,12 @@
 import express from "express";
 import { getCustomer, loginCustomer, logoutCustomer, registerCustomer } from "../controllers/customer.controller.js";
 import { isAuthenticated } from "../middlewares/authMiddleware.js";
+import { authLimiter } from "../middlewares/rateLimit.js";
 
 const customerRouter=express.Router()
 
-customerRouter.post('/register',registerCustomer)
-customerRouter.post('/login',loginCustomer)
+customerRouter.post('/register',authLimiter,registerCustomer)
+customerRouter.post('/login',authLimiter,loginCustomer)
 customerRouter.get('/me',isAuthenticated,getCustomer)
 customerRouter.post('/logout',logoutCustomer)
 export default customerRouter

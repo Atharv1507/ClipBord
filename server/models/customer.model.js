@@ -19,6 +19,11 @@ const customerSchema=new mongoose.Schema({
         type:String,
         required:true
     },
+    // stored in every JWT; bumping it (on logout) invalidates all existing tokens
+    tokenVersion:{
+        type:Number,
+        default:0
+    },
 },{timestamps:true })
 
 const customer=mongoose.model('customer',customerSchema)

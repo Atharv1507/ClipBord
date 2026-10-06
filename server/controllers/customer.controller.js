@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import customer from "../models/customer.model.js";
 import { genToken } from "../utils/genToken.js";
 import { hashPass,checkPass } from "../utils/hashPass.js";
@@ -29,7 +30,7 @@ export const registerCustomer= async (req,res)=>{
         const hashedPass=await hashPass(password)
 
         const newCustomer= await customer.create({fullName,password:hashedPass,email,phone})
-        const token=genToken(newCustomer._id)
+        const token=genToken(newCustomer._id,newCustomer.tokenVersion)
         // select:false doesn't apply to create(), so strip the hash before responding
         newCustomer.password=undefined
         res.cookie('token',token,cookieOptions)
@@ -58,7 +59,7 @@ export const loginCustomer= async(req,res)=>{
         if(!correctPass){
             return res.status(401).json({message:"Wrong password"})
         }
-        const token=genToken(isCustomer._id)
+        const token=genToken(isCustomer._id,isCustomer.tokenVersion)
 
         res.cookie('token',token,cookieOptions)
         return res.status(200).json({ message: "User Logged IN"})
@@ -72,8 +73,18 @@ export const getCustomer=(req,res)=>{
         res.status(200).json({ message: "User Authenticated", userData: req.customer })
 
 }
-export const logoutCustomer = (req, res) => {
+export const logoutCustomer = async (req, res) => {
     try {
+        const token = req.cookies.token
+        if (token) {
+            try {
+                const decode = jwt.verify(token, process.env.JWT_SECRET)
+                // bump the version so this token, and any stolen copy of it, stops working
+                await customer.updateOne({ _id: decode.customerId }, { $inc: { tokenVersion: 1 } })
+            } catch (err) {
+                // token already expired or invalid, nothing to revoke
+            }
+        }
         res.clearCookie('token', cookieOptions)
         return res.status(200).json({ message: "User Logged Out" })
     }

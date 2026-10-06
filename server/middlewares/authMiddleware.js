@@ -14,6 +14,10 @@ try{
     if(!Customer){
         return res.status(404).json({message:"User not found"})
     }
+    // token was issued before the last logout, so it's been revoked
+    if(decode.tokenVersion!==Customer.tokenVersion){
+        return res.status(401).json({message:"Token revoked"})
+    }
     req.customer=Customer
     next()
 }
