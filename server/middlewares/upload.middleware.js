@@ -23,7 +23,7 @@ const upload = multer({
     storage,
     fileFilter,
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB per photo (the dashboard shrinks them first)
+        fileSize: 10 * 1024 * 1024, // 5MB per photo (the dashboard shrinks them first)
         files: MAX_IMAGES,         // 8 x 5MB = 40MB in memory at most per request
         fields: 20,                // text fields (name, price, sizes, ...)
         fieldSize: 64 * 1024       // 64KB per text field

@@ -23,10 +23,11 @@ function ProductView({ product }) {
   const rootRef = useRef(null)
   const titleRef = useRef(null)
   const thumbsRef = useRef(null)
+  const trackRef = useRef(null)
   // Products from before galleries only have `image`.
   const photos = product.images?.length ? product.images : [{ url: product.image }]
   const [active, setActive] = useState(0)
-  const photo = photos[Math.min(active, photos.length - 1)]
+  const many = photos.length > 1
   const [size, setSize] = useState('')
   const [status, setStatus] = useState('idle') // 'idle' | 'adding'
   const [message, setMessage] = useState('')
@@ -105,14 +106,40 @@ function ProductView({ product }) {
     }
   }
 
-  // Arrow keys move along the thumbnails (one tab stop for the whole strip).
-  function onThumbKey(e) {
-    const last = photos.length - 1
-    const to = { ArrowRight: active + 1, ArrowDown: active + 1, ArrowLeft: active - 1, ArrowUp: active - 1, Home: 0, End: last }[e.key]
+  // The photos sit side by side in a scroll-snapping track, so swiping on a phone
+  // works natively; arrows, thumbnails and keys just scroll the track to a slide.
+  function goTo(index) {
+    const track = trackRef.current
+    if (!track) return
+    const next = Math.max(0, Math.min(photos.length - 1, index))
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    track.scrollTo({ left: next * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' })
+    setActive(next)
+  }
+
+  // Keeps the counter and thumbnails in step when the user swipes.
+  function onTrackScroll() {
+    const track = trackRef.current
+    if (!track?.clientWidth) return
+    const index = Math.round(track.scrollLeft / track.clientWidth)
+    if (index !== active) setActive(index)
+  }
+
+  // Arrow keys on the photo or the thumbnails move between photos.
+  function onPhotoKey(e) {
+    const to = { ArrowRight: active + 1, ArrowLeft: active - 1, Home: 0, End: photos.length - 1 }[e.key]
     if (to === undefined) return
     e.preventDefault()
-    const next = Math.max(0, Math.min(last, to))
-    setActive(next)
+    goTo(to)
+  }
+
+  // Thumbnails are one tab stop; focus follows the picked one.
+  function onThumbKey(e) {
+    const to = { ArrowRight: active + 1, ArrowDown: active + 1, ArrowLeft: active - 1, ArrowUp: active - 1, Home: 0, End: photos.length - 1 }[e.key]
+    if (to === undefined) return
+    e.preventDefault()
+    const next = Math.max(0, Math.min(photos.length - 1, to))
+    goTo(next)
     thumbsRef.current?.querySelectorAll('button')[next]?.focus()
   }
 
@@ -130,20 +157,79 @@ function ProductView({ product }) {
       {/* The top 82% of the 4:5 photo, as on the cards: the older catalogue images print the
           product name along the bottom. */}
       <div className="min-w-0">
-        <div data-photo className="relative aspect-[1/1.025] overflow-hidden bg-photo">
-          <img
-            src={photo.url}
-            alt={photos.length > 1 ? `${product.name}, photo ${active + 1} of ${photos.length}` : product.name}
-            className="aspect-[4/5] w-full object-cover"
-          />
+        <div
+          data-photo
+          role={many ? 'region' : undefined}
+          aria-roledescription={many ? 'carousel' : undefined}
+          aria-label={many ? `${product.name} photos` : undefined}
+          onKeyDown={many ? onPhotoKey : undefined}
+          className="relative aspect-[1/1.025] overflow-hidden bg-photo"
+        >
+          <div
+            ref={trackRef}
+            onScroll={many ? onTrackScroll : undefined}
+            // Swipe sideways through photos; the page still scrolls vertically.
+            className="flex h-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {photos.map((p, i) => (
+              <div
+                key={p.publicId ?? p.url}
+                role={many ? 'group' : undefined}
+                aria-roledescription={many ? 'slide' : undefined}
+                aria-label={many ? `${i + 1} of ${photos.length}` : undefined}
+                className="h-full w-full shrink-0 snap-start overflow-hidden"
+              >
+                <img
+                  src={p.url}
+                  alt={many ? `${product.name}, photo ${i + 1} of ${photos.length}` : product.name}
+                  // Only the first photo is needed straight away.
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  draggable={false}
+                  className="aspect-[4/5] w-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+
+          {many && (
+            <>
+              <button
+                type="button"
+                onClick={() => goTo(active - 1)}
+                disabled={active === 0}
+                aria-label="Previous photo"
+                className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-canvas/85 text-fg shadow-[0_6px_20px_-8px_var(--c-shadow)] backdrop-blur transition-opacity hover:bg-canvas disabled:pointer-events-none disabled:opacity-0 md:left-5"
+              >
+                <Icon name="caretLeft" className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => goTo(active + 1)}
+                disabled={active === photos.length - 1}
+                aria-label="Next photo"
+                className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-canvas/85 text-fg shadow-[0_6px_20px_-8px_var(--c-shadow)] backdrop-blur transition-opacity hover:bg-canvas disabled:pointer-events-none disabled:opacity-0 md:right-5"
+              >
+                <Icon name="caretLeft" className="h-4 w-4 rotate-180" />
+              </button>
+              <p aria-live="polite" className="absolute bottom-3 right-3 rounded-full bg-canvas/85 px-3 py-1 text-[13px] font-semibold tabular-nums text-fg backdrop-blur md:bottom-5 md:right-5">
+                {active + 1} / {photos.length}
+              </p>
+              {/* Dots for phones, where the thumbnails can sit below the fold. */}
+              <div aria-hidden="true" className="absolute inset-x-0 bottom-4 flex justify-center gap-1.5 md:hidden">
+                {photos.map((p, i) => (
+                  <span key={p.publicId ?? p.url} className={`h-1.5 rounded-full bg-canvas transition-all ${i === active ? 'w-4 opacity-100' : 'w-1.5 opacity-60'}`} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
-        {photos.length > 1 && (
-          <div ref={thumbsRef} role="group" aria-label="Product photos" onKeyDown={onThumbKey} className="flex gap-2 overflow-x-auto px-4 pt-3 md:px-[clamp(16px,2.2vw,32px)]">
+        {many && (
+          <div ref={thumbsRef} role="group" aria-label="Choose a photo" onKeyDown={onThumbKey} className="flex gap-2 overflow-x-auto px-4 pt-3 md:px-[clamp(16px,2.2vw,32px)]">
             {photos.map((p, i) => (
               <button
                 key={p.publicId ?? p.url}
                 type="button"
-                onClick={() => setActive(i)}
+                onClick={() => goTo(i)}
                 tabIndex={i === active ? 0 : -1}
                 aria-label={`Show image ${i + 1} of ${photos.length}`}
                 aria-current={i === active ? 'true' : undefined}
