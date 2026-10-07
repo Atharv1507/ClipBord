@@ -31,8 +31,40 @@ const orderItemSchema=new mongoose.Schema({
         type:Number,
         required:true,
         min:0
+    },
+    // How many of this line came back after delivery.
+    returnedQuantity:{
+        type:Number,
+        default:0,
+        min:0
     }
 },{_id:false})
+
+// One return recorded from the dashboard: which lines came back, how many,
+// and whether they went back into stock.
+const returnSchema=new mongoose.Schema({
+    items:[{
+        _id:false,
+        product:{type:mongoose.Schema.Types.ObjectId,ref:'product'},
+        name:String,
+        size:String,
+        quantity:Number
+    }],
+    restocked:{type:Boolean,default:false},
+    note:{type:String,trim:true,maxlength:300},
+    createdAt:{type:Date,default:Date.now}
+})
+
+// A refund of part (or all) of a delivered order. Kept apart from returns:
+// recording a return never moves money, and a refund doesn't need a return.
+const refundSchema=new mongoose.Schema({
+    amount:{type:Number,required:true}, // paise
+    razorpayRefundId:{type:String},
+    // pending while the Razorpay call is in flight
+    status:{type:String,enum:['pending','processed'],default:'pending'},
+    note:{type:String,trim:true,maxlength:300},
+    createdAt:{type:Date,default:Date.now}
+})
 
 const shippingAddressSchema=new mongoose.Schema({
     fullName:{type:String,required:true,trim:true},
@@ -131,6 +163,27 @@ const orderSchema=new mongoose.Schema({
     // so a refund still in flight isn't issued twice.
     refundRequestedAt:{
         type:Date
+    },
+    // After delivery: nothing back, some items back, or everything back.
+    returnStatus:{
+        type:String,
+        enum:['none','partial','full'],
+        default:'none'
+    },
+    returns:{
+        type:[returnSchema],
+        default:[]
+    },
+    // Refunds made after delivery, and their total in paise. The order stays
+    // 'paid'; revenue counts amount minus refundedAmount.
+    refunds:{
+        type:[refundSchema],
+        default:[]
+    },
+    refundedAmount:{
+        type:Number,
+        default:0,
+        min:0
     }
 },{timestamps:true})
 

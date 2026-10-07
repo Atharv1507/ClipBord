@@ -11,6 +11,7 @@ function OrdersList() {
   const [searchParams, setSearchParams] = useSearchParams()
   const paymentStatus = searchParams.get('paymentStatus') ?? ''
   const fulfillmentStatus = searchParams.get('fulfillmentStatus') ?? ''
+  const returnStatus = searchParams.get('returnStatus') ?? ''
   const page = Number(searchParams.get('page')) || 1
 
   const [search, setSearch] = useState(searchParams.get('search') ?? '')
@@ -20,10 +21,10 @@ function OrdersList() {
   }, [debounced, searchParams, setSearchParams])
 
   const { status, data, error, reload } = useAdminFetch('/admin/orders', {
-    paymentStatus, fulfillmentStatus, search: searchParams.get('search') ?? '', page: String(page),
+    paymentStatus, fulfillmentStatus, returnStatus, search: searchParams.get('search') ?? '', page: String(page),
   })
   const orders = data?.orders ?? []
-  const filtered = paymentStatus || fulfillmentStatus || searchParams.get('search')
+  const filtered = paymentStatus || fulfillmentStatus || returnStatus || searchParams.get('search')
 
   return (
     <>
@@ -31,7 +32,7 @@ function OrdersList() {
         {data && <span className="text-sm text-fg-soft tabular-nums">{plural(data.total ?? orders.length, 'order')}</span>}
       </PageHeader>
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_190px_190px]">
+      <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_190px_190px_170px]">
         <div>
           <label htmlFor="order-search" className="sr-only">Search orders</label>
           <input id="order-search" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Order #, phone or name" className={inputClass} />
@@ -49,6 +50,12 @@ function OrdersList() {
           <option value="shipped">Shipped</option>
           <option value="delivered">Delivered</option>
           <option value="cancelled">Cancelled</option>
+        </Select>
+        <Select id="order-returns" value={returnStatus} onChange={(v) => updateParams(searchParams, setSearchParams, { returnStatus: v })}>
+          <option value="">All orders</option>
+          <option value="any">With returns</option>
+          <option value="partial">Partly returned</option>
+          <option value="full">Fully returned</option>
         </Select>
       </div>
 

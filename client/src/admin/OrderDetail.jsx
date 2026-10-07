@@ -12,9 +12,9 @@ const CANCEL_REASONS = {
   out_of_stock: 'Sold out while the customer was paying',
 }
 
-// A confirm step for the one action that moves money. Native <dialog>, like the
-// bag drawer: focus trap and Escape for free.
-function ConfirmCancel({ open, order, busy, onConfirm, onClose }) {
+// A confirm step for actions that move money. Native <dialog>, like the bag
+// drawer: focus trap and Escape for free.
+function ConfirmDialog({ open, title, children, confirmLabel, busyLabel, busy, onConfirm, onClose }) {
   const ref = useRef(null)
   useEffect(() => {
     const dialog = ref.current
@@ -26,20 +26,132 @@ function ConfirmCancel({ open, order, busy, onConfirm, onClose }) {
     <dialog
       ref={ref}
       onClose={onClose}
-      aria-labelledby="cancel-title"
+      aria-labelledby="confirm-title"
       className="m-auto w-[min(440px,calc(100vw-32px))] rounded-panel bg-drawer p-6 text-drawer-fg backdrop:bg-scrim"
     >
-      <h2 id="cancel-title" className="display text-[32px]">Cancel and refund?</h2>
-      <p className="mt-3 text-sm text-drawer-soft">
-        {formatPaise(order.amount)} goes back to the customer through Razorpay and the stock returns to the shop. This can't be undone.
-      </p>
+      <h2 id="confirm-title" className="display text-[32px]">{title}</h2>
+      <p className="mt-3 text-sm text-drawer-soft">{children}</p>
       <div className="mt-6 flex flex-wrap justify-end gap-2.5">
-        <button type="button" onClick={onClose} disabled={busy} className={secondaryButton}>Keep order</button>
+        <button type="button" onClick={onClose} disabled={busy} className={secondaryButton}>Go back</button>
         <button type="button" onClick={onConfirm} disabled={busy} className={primaryButton}>
-          {busy ? 'Refunding…' : 'Cancel and refund'}
+          {busy ? busyLabel : confirmLabel}
         </button>
       </div>
     </dialog>
+  )
+}
+
+// Which items came back after delivery, how many, and whether they go back on
+// the shelf (decided each time: a damaged return shouldn't be resold).
+// Recording a return never refunds anything; that's the refund form's job.
+function ReturnForm({ order, busy, onSubmit }) {
+  const [counts, setCounts] = useState({})
+  const [restock, setRestock] = useState(false)
+  const [note, setNote] = useState('')
+  const lines = order.items
+    .map((item, index) => ({ item, index, left: item.quantity - (item.returnedQuantity ?? 0) }))
+    .filter((line) => line.left > 0)
+  const picked = lines
+    .map(({ index }) => ({ index, quantity: Number(counts[index] ?? 0) }))
+    .filter((line) => line.quantity > 0)
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (picked.length) onSubmit({ items: picked, restock, note: note.trim() || undefined })
+      }}
+    >
+      <fieldset disabled={busy} className="flex flex-col gap-3">
+        <legend className="sr-only">Items that came back</legend>
+        {lines.map(({ item, index, left }) => (
+          <div key={index} className="flex items-center gap-3">
+            <img src={item.image} alt="" className="h-12 w-10 shrink-0 rounded-[8px] bg-photo object-cover" />
+            <label htmlFor={`return-${index}`} className="min-w-0 flex-1 text-sm">
+              <span className="font-semibold">{item.name}</span>
+              <span className="text-fg-soft"> · size {item.size} · {left} can come back</span>
+            </label>
+            <select
+              id={`return-${index}`}
+              value={counts[index] ?? '0'}
+              onChange={(e) => setCounts((prev) => ({ ...prev, [index]: e.target.value }))}
+              className={`${inputClass} w-20`}
+            >
+              {Array.from({ length: left + 1 }, (_, n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+        ))}
+        <label className="flex items-center gap-2.5 text-sm">
+          <input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} className="h-4 w-4 accent-[var(--c-accent)]" />
+          Put these back in stock
+        </label>
+        <div>
+          <label htmlFor="return-note" className={smallLabel}>Note (optional)</label>
+          <input id="return-note" value={note} maxLength={300} placeholder="e.g. Too small, unworn" onChange={(e) => setNote(e.target.value)} className={inputClass} />
+        </div>
+        <div>
+          <button type="submit" disabled={!picked.length} className={`${primaryButton} disabled:cursor-not-allowed disabled:opacity-50`}>
+            {busy ? 'Saving…' : 'Mark as returned'}
+          </button>
+        </div>
+      </fieldset>
+    </form>
+  )
+}
+
+// Money back for a delivered order, any amount up to what's left. Pre-filled
+// with the value of returned items not yet refunded, but it's the admin's call.
+function RefundForm({ order, busy, onRequest }) {
+  const leftPaise = order.amount - (order.refundedAmount ?? 0)
+  const returnedPaise = order.items.reduce((sum, item) => sum + item.price * 100 * (item.returnedQuantity ?? 0), 0)
+  const suggested = Math.min(leftPaise, Math.max(0, returnedPaise - (order.refundedAmount ?? 0)))
+  const [amount, setAmount] = useState(suggested > 0 ? String(suggested / 100) : '')
+  const [note, setNote] = useState('')
+  const [error, setError] = useState('')
+
+  function submit(e) {
+    e.preventDefault()
+    const rupees = Number(amount)
+    const paise = Math.round(rupees * 100)
+    if (!amount || !Number.isFinite(rupees) || Math.abs(rupees * 100 - paise) > 1e-6 || paise < 100) {
+      setError('Enter at least ₹1, up to 2 decimal places')
+      return
+    }
+    if (paise > leftPaise) {
+      setError(`Only ${formatPaise(leftPaise)} is left to refund`)
+      return
+    }
+    setError('')
+    onRequest({ amount: rupees, note: note.trim() || undefined, paise })
+  }
+
+  return (
+    <form onSubmit={submit} noValidate>
+      <fieldset disabled={busy} className="grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)]">
+        <div>
+          <label htmlFor="refund-amount" className={smallLabel}>Amount (₹)</label>
+          <input
+            id="refund-amount"
+            inputMode="decimal"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))}
+            aria-invalid={error ? true : undefined}
+            aria-describedby="refund-help"
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label htmlFor="refund-note" className={smallLabel}>Note (optional)</label>
+          <input id="refund-note" value={note} maxLength={300} placeholder="e.g. Returned tee" onChange={(e) => setNote(e.target.value)} className={inputClass} />
+        </div>
+        <p id="refund-help" className={`text-[13px] sm:col-span-2 ${error ? 'text-accent-fg' : 'text-fg-soft'}`}>
+          {error || `Up to ${formatPaise(leftPaise)} can still be refunded.${returnedPaise ? ` Returned items are worth ${formatPaise(returnedPaise)}.` : ''}`}
+        </p>
+        <div className="sm:col-span-2">
+          <button type="submit" className={primaryButton}>Refund…</button>
+        </div>
+      </fieldset>
+    </form>
   )
 }
 
@@ -70,9 +182,13 @@ function OrderDetail() {
   const [attempt, setAttempt] = useState(0)
   const [ship, setShip] = useState({ courier: '', trackingNumber: '' })
   const [shipErrors, setShipErrors] = useState({})
-  const [busy, setBusy] = useState('') // '' | 'ship' | 'deliver' | 'cancel'
+  const [busy, setBusy] = useState('') // '' | 'ship' | 'deliver' | 'cancel' | 'return' | 'refund'
   const [message, setMessage] = useState({ text: '', tone: 'ok' })
   const [confirming, setConfirming] = useState(false)
+  // A refund waiting for its confirm step: { amount, note, paise }.
+  const [pendingRefund, setPendingRefund] = useState(null)
+  // Bumped after a return or refund so those forms start fresh.
+  const [formKey, setFormKey] = useState(0)
 
   useEffect(() => {
     let ignore = false
@@ -131,6 +247,18 @@ function OrderDetail() {
   const markDelivered = () =>
     run('deliver', () => axiosInstance.patch(`/admin/orders/${id}/status`, { fulfillmentStatus: 'delivered' }), 'Marked as delivered.')
 
+  async function recordReturn(body) {
+    const ok = await run('return', () => axiosInstance.post(`/admin/orders/${id}/returns`, body), body.restock ? 'Return recorded and the items are back in stock.' : 'Return recorded. Stock left as it was.')
+    if (ok) setFormKey((n) => n + 1)
+  }
+
+  async function refund() {
+    const { amount, note } = pendingRefund
+    const ok = await run('refund', () => axiosInstance.post(`/admin/orders/${id}/refunds`, { amount, note }), `Refunded ${formatPrice(amount)} through Razorpay.`)
+    setPendingRefund(null)
+    if (ok) setFormKey((n) => n + 1)
+  }
+
   async function cancel() {
     await run('cancel', () => axiosInstance.post(`/admin/orders/${id}/cancel`), 'Cancelled and refunded. Stock is back in the shop.')
     // Closed either way, so the result message underneath is visible.
@@ -148,6 +276,9 @@ function OrderDetail() {
 
   const canShip = order.paymentStatus === 'paid' && order.fulfillmentStatus === 'processing'
   const canDeliver = order.paymentStatus === 'paid' && order.fulfillmentStatus === 'shipped'
+  const delivered = order.paymentStatus === 'paid' && order.fulfillmentStatus === 'delivered'
+  const canReturn = delivered && order.items.some((item) => item.quantity > (item.returnedQuantity ?? 0))
+  const canRefund = delivered && order.amount - (order.refundedAmount ?? 0) >= 100
   const address = order.shippingAddress ?? {}
   const count = order.items.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -157,7 +288,17 @@ function OrderDetail() {
     ['Shipped', order.shippedAt],
     ['Delivered', order.deliveredAt],
     ['Cancelled', order.cancelledAt],
-  ].filter(([, at]) => at)
+    ...(order.returns ?? []).map((r) => [
+      `Returned ${r.items.map((i) => `${i.quantity} × ${i.name} (${i.size})`).join(', ')}${r.restocked ? ', restocked' : ''}${r.note ? ` · ${r.note}` : ''}`,
+      r.createdAt,
+    ]),
+    ...(order.refunds ?? []).map((r) => [
+      `Refunded ${formatPaise(r.amount)}${r.status === 'pending' ? ' (in progress)' : ''}${r.note ? ` · ${r.note}` : ''}`,
+      r.createdAt,
+    ]),
+  ]
+    .filter(([, at]) => at)
+    .sort((a, b) => new Date(a[1]) - new Date(b[1]))
 
   return (
     <>
@@ -184,7 +325,10 @@ function OrderDetail() {
                     ) : (
                       <p className="font-semibold">{item.name}</p>
                     )}
-                    <p className="text-fg-soft">Size {item.size} × {item.quantity} · {formatPrice(item.price)} each</p>
+                    <p className="text-fg-soft">
+                      Size {item.size} × {item.quantity} · {formatPrice(item.price)} each
+                      {item.returnedQuantity > 0 && <span className="font-semibold text-accent-fg"> · {item.returnedQuantity} returned</span>}
+                    </p>
                   </div>
                   <p className="shrink-0 text-sm font-semibold tabular-nums">{formatPrice(item.price * item.quantity)}</p>
                 </li>
@@ -244,6 +388,18 @@ function OrderDetail() {
               )}
             </Section>
           )}
+
+          {canReturn && (
+            <Section title="Record a return">
+              <ReturnForm key={`return-${formKey}`} order={order} busy={busy === 'return'} onSubmit={recordReturn} />
+            </Section>
+          )}
+
+          {canRefund && (
+            <Section title="Refund">
+              <RefundForm key={`refund-${formKey}`} order={order} busy={busy === 'refund'} onRequest={setPendingRefund} />
+            </Section>
+          )}
         </div>
 
         <div className="flex flex-col gap-5">
@@ -273,6 +429,7 @@ function OrderDetail() {
               {order.paymentStatus === 'refunded' && (
                 <Row label="Refund">{order.razorpayRefundId ?? <span className="text-accent-fg">Pending, retried automatically</span>}</Row>
               )}
+              {order.refundedAmount > 0 && <Row label="Refunded after delivery">{formatPaise(order.refundedAmount)}</Row>}
               {order.cancelReason && <Row label="Reason">{CANCEL_REASONS[order.cancelReason] ?? order.cancelReason}</Row>}
             </dl>
           </Section>
@@ -280,9 +437,9 @@ function OrderDetail() {
           <Section title="Timeline">
             <ol className="flex flex-col gap-2.5">
               {timeline.map(([label, at]) => (
-                <li key={label} className="flex items-baseline justify-between gap-4 text-sm">
-                  <span className="font-semibold">{label}</span>
-                  <span className="text-fg-soft">{formatDateTime(at)}</span>
+                <li key={`${label}-${at}`} className="flex items-baseline justify-between gap-4 text-sm">
+                  <span className="min-w-0 font-semibold">{label}</span>
+                  <span className="shrink-0 text-fg-soft">{formatDateTime(at)}</span>
                 </li>
               ))}
               {order.courier && (
@@ -293,7 +450,28 @@ function OrderDetail() {
         </div>
       </div>
 
-      <ConfirmCancel open={confirming} order={order} busy={busy === 'cancel'} onConfirm={cancel} onClose={() => setConfirming(false)} />
+      <ConfirmDialog
+        open={confirming}
+        title="Cancel and refund?"
+        confirmLabel="Cancel and refund"
+        busyLabel="Refunding…"
+        busy={busy === 'cancel'}
+        onConfirm={cancel}
+        onClose={() => setConfirming(false)}
+      >
+        {formatPaise(order.amount)} goes back to the customer through Razorpay and the stock returns to the shop. This can't be undone.
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={pendingRefund !== null}
+        title={`Refund ${pendingRefund ? formatPaise(pendingRefund.paise) : ''}?`}
+        confirmLabel="Refund"
+        busyLabel="Refunding…"
+        busy={busy === 'refund'}
+        onConfirm={refund}
+        onClose={() => setPendingRefund(null)}
+      >
+        The money goes back to the customer through Razorpay. Stock isn't changed by a refund. This can't be undone.
+      </ConfirmDialog>
     </>
   )
 }

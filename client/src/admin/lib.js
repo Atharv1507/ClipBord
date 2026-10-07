@@ -43,7 +43,10 @@ export function orderStatus(order) {
   switch (order.fulfillmentStatus) {
     case 'processing': return { label: 'Packing', tone: 'accent' }
     case 'shipped': return { label: 'Shipped', tone: 'solid' }
-    case 'delivered': return { label: 'Delivered', tone: 'muted' }
+    case 'delivered':
+      if (order.returnStatus === 'full') return { label: 'Returned', tone: 'warn' }
+      if (order.returnStatus === 'partial') return { label: 'Partly returned', tone: 'warn' }
+      return { label: 'Delivered', tone: 'muted' }
     case 'cancelled': return { label: 'Cancelled', tone: 'muted' }
     default: return { label: 'Paid', tone: 'solid' }
   }

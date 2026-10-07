@@ -209,7 +209,7 @@ export const getMyOrders = async (req, res) => {
       customer: req.customer._id,
       paymentStatus: { $in: ["paid", "refunded"] },
     })
-      .select("items shippingAddress amount currency paymentStatus fulfillmentStatus razorpayPaymentId paidAt createdAt courier trackingNumber shippedAt deliveredAt cancelledAt cancelReason")
+      .select("items shippingAddress amount currency paymentStatus fulfillmentStatus razorpayPaymentId paidAt createdAt courier trackingNumber shippedAt deliveredAt cancelledAt cancelReason returnStatus refundedAmount")
       .sort({ createdAt: -1 })
       .limit(50)
       .lean();

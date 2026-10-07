@@ -36,6 +36,8 @@ function cancelMessage(order) {
 function statusLabel(order) {
   if (order.paymentStatus === 'refunded') return 'Refunded'
   if (order.fulfillmentStatus === 'cancelled') return 'Cancelled'
+  if (order.returnStatus === 'full') return 'Returned'
+  if (order.returnStatus === 'partial') return 'Partly returned'
   return STAGES.find((s) => s.key === order.fulfillmentStatus)?.label ?? 'Placed'
 }
 
@@ -100,12 +102,21 @@ function OrderCard({ order }) {
             </Link>
             <div className="min-w-0 flex-1 text-sm">
               <Link to={`/product/${item.product}`} className="font-semibold hover:text-accent-fg">{item.name}</Link>
-              <p className="text-fg-soft">Size {item.size} × {item.quantity}</p>
+              <p className="text-fg-soft">
+                Size {item.size} × {item.quantity}
+                {item.returnedQuantity > 0 && <span className="text-accent-fg"> · {item.returnedQuantity} returned</span>}
+              </p>
             </div>
             <p className="shrink-0 text-sm font-semibold tabular-nums">{formatPrice(item.price * item.quantity)}</p>
           </li>
         ))}
       </ul>
+
+      {order.refundedAmount > 0 && (
+        <p className="mt-5 text-sm">
+          Refunded <span className="font-semibold tabular-nums">{formatPrice(order.refundedAmount / 100)}</span>. It usually reaches your account in 5–7 working days.
+        </p>
+      )}
 
       {address && (
         <p className="mt-5 text-[13px] text-fg-soft">

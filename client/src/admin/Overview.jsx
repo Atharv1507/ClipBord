@@ -16,6 +16,7 @@ const COUNTS = [
   { key: 'delivered', label: 'Delivered', to: '/admin/orders?fulfillmentStatus=delivered' },
   { key: 'cancelled', label: 'Cancelled', to: '/admin/orders?fulfillmentStatus=cancelled' },
   { key: 'refunded', label: 'Refunded', to: '/admin/orders?paymentStatus=refunded' },
+  { key: 'returned', label: 'Returns', to: '/admin/orders?returnStatus=any' },
 ]
 
 function StockList({ title, items, empty, describe }) {
