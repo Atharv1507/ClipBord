@@ -32,8 +32,8 @@ function OrdersList() {
         {data && <span className="text-sm text-fg-soft tabular-nums">{plural(data.total ?? orders.length, 'order')}</span>}
       </PageHeader>
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_190px_190px_170px]">
-        <div>
+      <div className="mb-5 grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-[minmax(0,1fr)_190px_190px_170px]">
+        <div className="col-span-2 lg:col-span-1">
           <label htmlFor="order-search" className="sr-only">Search orders</label>
           <input id="order-search" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Order #, phone or name" className={inputClass} />
         </div>
@@ -78,14 +78,14 @@ function OrdersList() {
               >
                 <span className="font-semibold tabular-nums">{shortId(order._id)}</span>
                 <span className="justify-self-end md:hidden"><OrderBadge order={order} /></span>
-                <span className="min-w-0 truncate text-sm">
+                <span className="col-span-2 min-w-0 truncate text-sm md:col-span-1">
                   <span className="font-semibold">{order.customer?.fullName ?? order.shippingAddress?.fullName}</span>
                   <span className="text-fg-soft"> · {order.shippingAddress?.city}</span>
                 </span>
-                <span className="text-sm text-fg-soft md:order-none">
+                <span className="min-w-0 truncate text-sm text-fg-soft">
                   {formatDate(order.paidAt ?? order.createdAt)} · {plural(order.itemCount ?? order.items?.length ?? 0, 'item')}
                 </span>
-                <span className="text-sm font-semibold tabular-nums md:text-right">{formatPaise(order.amount)}</span>
+                <span className="justify-self-end text-sm font-semibold tabular-nums md:justify-self-auto md:text-right">{formatPaise(order.amount)}</span>
                 <span className="hidden justify-self-end md:block"><OrderBadge order={order} /></span>
               </Link>
             </li>

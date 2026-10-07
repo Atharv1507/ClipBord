@@ -31,7 +31,7 @@ function ConfirmDialog({ open, title, children, confirmLabel, busyLabel, busy, o
     >
       <h2 id="confirm-title" className="display text-[32px]">{title}</h2>
       <p className="mt-3 text-sm text-drawer-soft">{children}</p>
-      <div className="mt-6 flex flex-wrap justify-end gap-2.5">
+      <div className="mt-6 flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end">
         <button type="button" onClick={onClose} disabled={busy} className={secondaryButton}>Go back</button>
         <button type="button" onClick={onConfirm} disabled={busy} className={primaryButton}>
           {busy ? busyLabel : confirmLabel}
@@ -62,27 +62,31 @@ function ReturnForm({ order, busy, onSubmit }) {
         if (picked.length) onSubmit({ items: picked, restock, note: note.trim() || undefined })
       }}
     >
-      <fieldset disabled={busy} className="flex flex-col gap-3">
+      <fieldset disabled={busy} className="flex min-w-0 flex-col gap-3">
         <legend className="sr-only">Items that came back</legend>
         {lines.map(({ item, index, left }) => (
-          <div key={index} className="flex items-center gap-3">
-            <img src={item.image} alt="" className="h-12 w-10 shrink-0 rounded-[8px] bg-photo object-cover" />
-            <label htmlFor={`return-${index}`} className="min-w-0 flex-1 text-sm">
-              <span className="font-semibold">{item.name}</span>
-              <span className="text-fg-soft"> · size {item.size} · {left} can come back</span>
+          <div key={index} className="flex items-center gap-3 rounded-inner border border-line p-2.5">
+            <img src={item.image} alt="" className="h-14 w-11 shrink-0 rounded-[8px] bg-photo object-cover" />
+            <label htmlFor={`return-${index}`} className="min-w-0 flex-1 text-sm leading-snug">
+              <span className="block truncate font-semibold">{item.name}</span>
+              <span className="text-fg-soft">Size {item.size} · {left} can come back</span>
             </label>
-            <select
-              id={`return-${index}`}
-              value={counts[index] ?? '0'}
-              onChange={(e) => setCounts((prev) => ({ ...prev, [index]: e.target.value }))}
-              className={`${inputClass} w-20`}
-            >
-              {Array.from({ length: left + 1 }, (_, n) => <option key={n} value={n}>{n}</option>)}
-            </select>
+            <div className="relative shrink-0">
+              <select
+                id={`return-${index}`}
+                value={counts[index] ?? '0'}
+                onChange={(e) => setCounts((prev) => ({ ...prev, [index]: e.target.value }))}
+                aria-label={`How many ${item.name} (${item.size}) came back`}
+                className="h-11 w-[72px] appearance-none rounded-[12px] border-[1.5px] border-line-strong bg-transparent pl-3.5 pr-8 text-[15px] tabular-nums text-fg outline-none focus:border-fg"
+              >
+                {Array.from({ length: left + 1 }, (_, n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+              <Icon name="caret" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-soft" />
+            </div>
           </div>
         ))}
-        <label className="flex items-center gap-2.5 text-sm">
-          <input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} className="h-4 w-4 accent-[var(--c-accent)]" />
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-semibold">
+          <input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} className="h-5 w-5 shrink-0 accent-[var(--c-accent)]" />
           Put these back in stock
         </label>
         <div>
@@ -90,7 +94,7 @@ function ReturnForm({ order, busy, onSubmit }) {
           <input id="return-note" value={note} maxLength={300} placeholder="e.g. Too small, unworn" onChange={(e) => setNote(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <button type="submit" disabled={!picked.length} className={`${primaryButton} disabled:cursor-not-allowed disabled:opacity-50`}>
+          <button type="submit" disabled={!picked.length} className={`${primaryButton} w-full sm:w-auto`}>
             {busy ? 'Saving…' : 'Mark as returned'}
           </button>
         </div>
@@ -127,8 +131,8 @@ function RefundForm({ order, busy, onRequest }) {
 
   return (
     <form onSubmit={submit} noValidate>
-      <fieldset disabled={busy} className="grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)]">
-        <div>
+      <fieldset disabled={busy} className="grid min-w-0 gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
+        <div className="min-w-0">
           <label htmlFor="refund-amount" className={smallLabel}>Amount (₹)</label>
           <input
             id="refund-amount"
@@ -137,18 +141,18 @@ function RefundForm({ order, busy, onRequest }) {
             onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))}
             aria-invalid={error ? true : undefined}
             aria-describedby="refund-help"
-            className={inputClass}
+            className={`${inputClass} tabular-nums`}
           />
         </div>
-        <div>
+        <div className="min-w-0">
           <label htmlFor="refund-note" className={smallLabel}>Note (optional)</label>
           <input id="refund-note" value={note} maxLength={300} placeholder="e.g. Returned tee" onChange={(e) => setNote(e.target.value)} className={inputClass} />
         </div>
-        <p id="refund-help" className={`text-[13px] sm:col-span-2 ${error ? 'text-accent-fg' : 'text-fg-soft'}`}>
+        <p id="refund-help" className={`text-[13px] leading-relaxed sm:col-span-2 ${error ? 'text-accent-fg' : 'text-fg-soft'}`}>
           {error || `Up to ${formatPaise(leftPaise)} can still be refunded.${returnedPaise ? ` Returned items are worth ${formatPaise(returnedPaise)}.` : ''}`}
         </p>
         <div className="sm:col-span-2">
-          <button type="submit" className={primaryButton}>Refund…</button>
+          <button type="submit" className={`${primaryButton} w-full sm:w-auto`}>Review refund</button>
         </div>
       </fieldset>
     </form>
@@ -168,7 +172,7 @@ function Row({ label, children }) {
   return (
     <div className="flex flex-wrap justify-between gap-x-4 gap-y-0.5 py-1.5 text-sm">
       <dt className="text-fg-soft">{label}</dt>
-      <dd className="min-w-0 break-all text-right font-medium">{children}</dd>
+      <dd className="min-w-0 break-words text-right font-medium [overflow-wrap:anywhere]">{children}</dd>
     </div>
   )
 }
@@ -344,7 +348,7 @@ function OrderDetail() {
             <Section title={canShip ? 'Ship this order' : 'Delivery'}>
               {canShip ? (
                 <form onSubmit={markShipped} noValidate>
-                  <fieldset disabled={busy !== ''} className="grid gap-3 sm:grid-cols-2">
+                  <fieldset disabled={busy !== ''} className="grid min-w-0 gap-3 sm:grid-cols-2">
                     <div>
                       <label htmlFor="courier" className={smallLabel}>Courier</label>
                       <input
@@ -379,7 +383,7 @@ function OrderDetail() {
                   </fieldset>
                 </form>
               ) : (
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm text-fg-soft">Shipped with {order.courier}, tracking {order.trackingNumber}.</p>
                   <button type="button" onClick={markDelivered} disabled={busy !== ''} className={primaryButton}>
                     {busy === 'deliver' ? 'Saving…' : 'Mark as delivered'}
@@ -437,9 +441,9 @@ function OrderDetail() {
           <Section title="Timeline">
             <ol className="flex flex-col gap-2.5">
               {timeline.map(([label, at]) => (
-                <li key={`${label}-${at}`} className="flex items-baseline justify-between gap-4 text-sm">
+                <li key={`${label}-${at}`} className="flex flex-col gap-0.5 text-sm sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                   <span className="min-w-0 font-semibold">{label}</span>
-                  <span className="shrink-0 text-fg-soft">{formatDateTime(at)}</span>
+                  <span className="shrink-0 text-[13px] text-fg-soft sm:text-sm">{formatDateTime(at)}</span>
                 </li>
               ))}
               {order.courier && (

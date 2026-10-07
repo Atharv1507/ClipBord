@@ -90,7 +90,7 @@ function AdminLayout({ email, children }) {
         </nav>
       </header>
 
-      <main className="min-w-0 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-10">{children}</main>
+      <main className="min-w-0 overflow-x-clip px-4 pb-16 pt-5 sm:px-6 sm:pt-6 lg:px-10 lg:pt-10">{children}</main>
     </div>
   )
 }

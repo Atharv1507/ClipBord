@@ -25,7 +25,7 @@ export function PageHeader({ title, children, eyebrow }) {
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
         {eyebrow && <div className="mb-2 text-sm text-fg-soft">{eyebrow}</div>}
-        <h1 className="display text-[clamp(40px,5vw,64px)]">{title}</h1>
+        <h1 className="display break-words text-[clamp(34px,5vw,64px)]">{title}</h1>
       </div>
       {children && <div className="flex flex-wrap items-center gap-2.5">{children}</div>}
     </header>
@@ -57,12 +57,12 @@ export function Pagination({ page, totalPages, onChange }) {
   if (!totalPages || totalPages <= 1) return null
   return (
     <nav aria-label="Pages" className="mt-6 flex items-center justify-between gap-3 text-sm">
-      <button type="button" onClick={() => onChange(page - 1)} disabled={page <= 1} className={secondaryButton}>
-        <Icon name="caretLeft" className="h-4 w-4" /> Previous
+      <button type="button" onClick={() => onChange(page - 1)} disabled={page <= 1} aria-label="Previous page" className={secondaryButton}>
+        <Icon name="caretLeft" className="h-4 w-4" /> <span className="hidden sm:inline">Previous</span>
       </button>
       <span className="text-fg-soft tabular-nums">Page {page} of {totalPages}</span>
-      <button type="button" onClick={() => onChange(page + 1)} disabled={page >= totalPages} className={secondaryButton}>
-        Next <Icon name="caretLeft" className="h-4 w-4 rotate-180" />
+      <button type="button" onClick={() => onChange(page + 1)} disabled={page >= totalPages} aria-label="Next page" className={secondaryButton}>
+        <span className="hidden sm:inline">Next</span> <Icon name="caretLeft" className="h-4 w-4 rotate-180" />
       </button>
     </nav>
   )

@@ -55,7 +55,7 @@ function Overview() {
       <PageHeader title="Overview" />
 
       {refundPending > 0 && (
-        <Link to="/admin/orders?paymentStatus=refunded" role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-panel border-[1.5px] border-accent-fg px-5 py-4 text-accent-fg">
+        <Link to="/admin/orders?paymentStatus=refunded" role="alert" className="mb-6 flex flex-col gap-2 rounded-panel border-[1.5px] border-accent-fg px-5 py-4 text-accent-fg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <span className="font-semibold">
             {refundPending === 1 ? '1 refund is' : `${refundPending} refunds are`} still waiting on Razorpay. The reconcile job retries them automatically.
           </span>
@@ -65,18 +65,18 @@ function Overview() {
 
       <section aria-label="Revenue" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {REVENUE.map((r) => (
-          <div key={r.key} className="rounded-panel bg-panel p-5 text-panel-fg">
-            <p className="text-sm text-panel-soft">{r.label}</p>
-            <p className="mt-2 text-[clamp(22px,2.6vw,32px)] font-semibold tabular-nums">{formatPaise(revenue[r.key])}</p>
+          <div key={r.key} className="min-w-0 rounded-panel bg-panel p-4 text-panel-fg sm:p-5">
+            <p className="text-[13px] text-panel-soft sm:text-sm">{r.label}</p>
+            <p className="mt-1.5 text-[clamp(19px,2.6vw,32px)] font-semibold tabular-nums [overflow-wrap:anywhere] sm:mt-2">{formatPaise(revenue[r.key])}</p>
           </div>
         ))}
       </section>
 
-      <section aria-label="Orders by status" className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <section aria-label="Orders by status" className="mt-3 grid grid-cols-3 gap-2.5 sm:gap-3 xl:grid-cols-6">
         {COUNTS.map((c) => (
-          <Link key={c.key} to={c.to} className="rounded-panel border border-line p-4 transition-colors hover:border-fg">
-            <p className="text-sm text-fg-soft">{c.label}</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">{counts[c.key] ?? 0}</p>
+          <Link key={c.key} to={c.to} className="min-w-0 rounded-panel border border-line p-3 transition-colors hover:border-fg sm:p-4">
+            <p className="truncate text-[13px] text-fg-soft sm:text-sm">{c.label}</p>
+            <p className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl">{counts[c.key] ?? 0}</p>
           </Link>
         ))}
       </section>

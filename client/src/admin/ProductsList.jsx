@@ -69,8 +69,8 @@ function ProductsList() {
       </PageHeader>
       <Toast message={toast} onClose={() => setToast('')} />
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px_160px]">
-        <div>
+      <div className="mb-5 grid grid-cols-2 gap-2.5 sm:grid-cols-[minmax(0,1fr)_180px_160px] sm:gap-3">
+        <div className="col-span-2 sm:col-span-1">
           <label htmlFor="product-search" className="sr-only">Search products</label>
           <input id="product-search" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name" className={inputClass} />
         </div>
@@ -108,11 +108,13 @@ function ProductsList() {
                   {CATEGORY_LABELS[p.category] ?? p.category} · {formatPrice(p.price)} · {p.images?.length || 1} {(p.images?.length || 1) === 1 ? 'photo' : 'photos'}
                 </p>
               </div>
+              {/* On phones, stock and actions get their own row under the name. */}
+              <div className="flex w-full items-center justify-between gap-3 pl-[68px] md:w-auto md:pl-0">
               <dl className="flex gap-1.5" aria-label="Stock per size">
                 {SIZES.map((s) => {
                   const left = p.sizes?.[s] ?? 0
                   return (
-                    <div key={s} className={`w-12 rounded-[10px] px-1.5 py-1 text-center ${left === 0 ? 'bg-line text-fg-soft' : left <= 3 ? 'border border-accent-fg text-accent-fg' : 'border border-line'}`}>
+                    <div key={s} className={`w-11 rounded-[10px] sm:w-12 px-1.5 py-1 text-center ${left === 0 ? 'bg-line text-fg-soft' : left <= 3 ? 'border border-accent-fg text-accent-fg' : 'border border-line'}`}>
                       <dt className="text-[11px] font-semibold">{s}</dt>
                       <dd className="text-sm font-semibold tabular-nums">{left}</dd>
                     </div>
@@ -124,6 +126,7 @@ function ProductsList() {
                 <button type="button" onClick={() => setArchived(p, !p.archived)} disabled={busyId === p._id} className={quietButton}>
                   {busyId === p._id ? 'Saving…' : p.archived ? 'Restore' : 'Archive'}
                 </button>
+              </div>
               </div>
             </li>
           ))}
