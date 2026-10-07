@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModifier.js'
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 
 // The 3D half of the "Sign here" section: a hardboard clipboard lying on the table with a
@@ -22,7 +22,6 @@ const PAPER_Z = 0.004
 const SURFACE = FRONT + PAPER_Z + 0.002
 const TEX_W = 1024, TEX_H = 1339
 const TABLE_Z = -(BD / 2 + BEV) // the table, in board coordinates
-const YAW = 0.34 // how the board lies on the table
 
 // When each signature stroke is written, in the 0..1000 "writing" timeline (= progress x 1000).
 export const STROKES = [[360, 540], [566, 640], [664, 712]]
@@ -102,52 +101,88 @@ async function svgImage(svg, fill) {
 }
 
 // ---------- sheet metal: a rounded plate bent along a profile curve ----------
-function roundedPlan(w, len, rNear, rFar) {
-  const s = new THREE.Shape()
-  const x0 = -w / 2
-  const x1 = w / 2
-  s.moveTo(x0 + rNear, 0)
-  s.lineTo(x1 - rNear, 0)
-  if (rNear) s.quadraticCurveTo(x1, 0, x1, rNear)
-  s.lineTo(x1, len - rFar)
-  if (rFar) s.quadraticCurveTo(x1, len, x1 - rFar, len)
-  s.lineTo(x0 + rFar, len)
-  if (rFar) s.quadraticCurveTo(x0, len, x0, len - rFar)
-  s.lineTo(x0, rNear)
-  if (rNear) s.quadraticCurveTo(x0, 0, x0 + rNear, 0)
-  return s
-}
-
-// curve: a SplineCurve in (u = down the board from the hinge, v = up off the board)
-function bentPlate({ width, rNear, rFar, thick, curve, maxEdge = 0.03 }) {
+// Built as one even grid (top, bottom, and a rounded rim), then bent, so the surface stays
+// smooth through tight bends. curve: a SplineCurve in (u = down the board from the hinge,
+// v = up off the board). Plan coordinates: x across, a = distance along the curve.
+function bentPlate({ width, rNear, rFar, thick, curve }) {
   const len = curve.getLength()
-  let g = new THREE.ExtrudeGeometry(roundedPlan(width, len, rNear, rFar), {
-    depth: thick, bevelEnabled: true, bevelThickness: thick * 0.4, bevelSize: thick * 0.4, bevelSegments: 3, curveSegments: 12,
-  })
-  g.translate(0, 0, -thick / 2)
-  g = new TessellateModifier(maxEdge, 9).modify(g)
-  const p = g.attributes.position
-  const n = g.attributes.normal
+  const h = thick * 0.9 // half thickness, rim included
+  const NA = Math.max(60, Math.ceil(len / 0.004))
+  const NX = 48
+  const RIM = 6
+  // half width at distance a, following the rounded corners
+  const halfW = (a) => {
+    const r = a < rNear ? rNear : a > len - rFar ? rFar : 0
+    if (!r) return width / 2
+    const d = a < rNear ? rNear - a : a - (len - rFar)
+    return width / 2 - r + Math.sqrt(Math.max(0, r * r - d * d))
+  }
   const P = new THREE.Vector2()
   const T = new THREE.Vector2()
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), a = p.getY(i), z = p.getZ(i)
+  const bend = (x, a, z, out) => {
     const t = clamp01(a / len)
     curve.getPointAt(t, P)
     curve.getTangentAt(t, T)
     P.addScaledVector(T, a - t * len)
-    const Nx = -T.y, Ny = T.x
-    p.setXYZ(i, -x, -(P.x + Nx * z), P.y + Ny * z)
-    const nx = n.getX(i), na = n.getY(i), nz = n.getZ(i)
-    n.setXYZ(i, -nx, -(T.x * na + Nx * nz), T.y * na + Ny * nz)
+    out.push(-x, -(P.x - T.y * z), P.y + T.x * z)
   }
-  g.computeBoundingBox()
-  const bb = g.boundingBox
-  const uv = g.attributes.uv
-  for (let i = 0; i < p.count; i++) {
-    uv.setXY(i, (p.getX(i) - bb.min.x) / (bb.max.x - bb.min.x), (p.getY(i) - bb.min.y) / (bb.max.y - bb.min.y))
+  const part = (pos, uv, idx) => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2))
+    g.setIndex(idx)
+    g.computeVertexNormals()
+    return g
   }
-  return g
+  const uvOf = (x, a, uv) => uv.push(clamp01(0.5 - x / width), clamp01(1 - a / len)) // x is mirrored by bend()
+
+  // top and bottom faces
+  const faces = [1, -1].map((side) => {
+    const pos = [], uv = [], idx = []
+    for (let i = 0; i <= NA; i++) {
+      const a = (i / NA) * len, hw = halfW(a)
+      for (let j = 0; j <= NX; j++) {
+        const x = (j / NX * 2 - 1) * hw
+        bend(x, a, side * h, pos)
+        uvOf(x, a, uv)
+      }
+    }
+    for (let i = 0; i < NA; i++) {
+      for (let j = 0; j < NX; j++) {
+        const v = i * (NX + 1) + j, r = v + NX + 1
+        if (side > 0) idx.push(v, v + 1, r, v + 1, r + 1, r)
+        else idx.push(v, r, v + 1, v + 1, r, r + 1)
+      }
+    }
+    return part(pos, uv, idx)
+  })
+
+  // the rim: a rounded edge all the way round, counter-clockwise seen from the top
+  const loop = []
+  for (let j = 0; j <= NX; j++) loop.push([(j / NX * 2 - 1) * halfW(0), 0])
+  for (let i = 1; i <= NA; i++) loop.push([halfW((i / NA) * len), (i / NA) * len])
+  for (let j = NX - 1; j >= 0; j--) loop.push([(j / NX * 2 - 1) * halfW(len), len])
+  for (let i = NA - 1; i >= 1; i--) loop.push([-halfW((i / NA) * len), (i / NA) * len])
+  const pos = [], uv = [], idx = []
+  const n = loop.length
+  loop.forEach(([x, a], k) => {
+    const [x0, a0] = loop[(k - 1 + n) % n], [x1, a1] = loop[(k + 1) % n]
+    let ox = a1 - a0, oa = -(x1 - x0) // outward = tangent turned clockwise
+    const l = Math.hypot(ox, oa) || 1
+    ox /= l
+    oa /= l
+    for (let q = 0; q <= RIM; q++) {
+      const th = (q / RIM) * Math.PI
+      const e = h * 0.7 * Math.sin(th)
+      bend(x + ox * e, a + oa * e, h * Math.cos(th), pos)
+      uvOf(x, a, uv)
+    }
+  })
+  for (let k = 0; k < n; k++) {
+    const A = k * (RIM + 1), B = ((k + 1) % n) * (RIM + 1)
+    for (let q = 0; q < RIM; q++) idx.push(A + q, A + q + 1, B + q, B + q, A + q + 1, B + q + 1)
+  }
+  return mergeGeometries([...faces, part(pos, uv, idx)])
 }
 const spline = (pts) => new THREE.SplineCurve(pts.map(([u, v]) => new THREE.Vector2(u, v)))
 
@@ -307,13 +342,16 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
   const tex = (c, srgb) => {
     const t = keep(new THREE.CanvasTexture(c))
     if (srgb) t.colorSpace = THREE.SRGBColorSpace
-    t.anisotropy = 8
+    t.anisotropy = maxAniso
     t.wrapS = t.wrapT = THREE.RepeatWrapping
     return t
   }
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.5 : 2))
+  // Phones get their full pixel density (up to 3x): the screen is small, so it still costs less
+  // than a 2x desktop, and the printed sheet needs it to stay crisp.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 3 : 2))
+  const maxAniso = renderer.capabilities.getMaxAnisotropy()
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.outputColorSpace = THREE.SRGBColorSpace
   renderer.shadowMap.enabled = true
@@ -437,9 +475,15 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
   const jawPivot = new THREE.Group()
   jawPivot.position.z = HV
   clip.add(jawPivot)
-  const jawGeo = bentPlate({ width: 1.24, rNear: 0, rFar: 0.1, thick: 0.013, curve: spline([[-0.035, 0.03], [0.0, 0.047], [0.05, 0.03], [0.12, -0.022], [0.2, -0.042], [0.4, -0.05], [0.47, -0.047], [0.53, -0.025]]) })
+  const JAW_W = 1.24
+  const jawCurve = spline([[-0.035, 0.03], [0.0, 0.047], [0.05, 0.03], [0.12, -0.022], [0.2, -0.042], [0.4, -0.05], [0.47, -0.047], [0.53, -0.025]])
+  const jawGeo = bentPlate({ width: JAW_W, rNear: 0, rFar: 0.1, thick: 0.013, curve: jawCurve })
   cast(new THREE.Mesh(jawGeo, jawMat), jawPivot)
   cast(new THREE.Mesh(bentPlate({ width: 0.62, rNear: 0, rFar: 0.14, thick: 0.013, curve: spline([[0.03, 0.036], [-0.04, 0.072], [-0.13, 0.135], [-0.22, 0.175], [-0.29, 0.18], [-0.335, 0.162]]) }), steel), jawPivot)
+
+  // The curved steel shades itself badly at grazing angles (jagged shadow acne on the lever);
+  // its look comes from reflections anyway, so it only casts shadows.
+  clip.traverse((o) => (o.receiveShadow = false))
 
   // ---------- the printed delivery sheet ----------
   const grain = paperGrainCanvas()
@@ -612,7 +656,7 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
   cyl(0.047, 0.045, 1.05, 1.42, lacquerBlack)
   lathe([[0.045, 1.42], [0.044, 1.43], [0.034, 1.455], [0.016, 1.468], [0.0, 1.47]], chrome)
   // pocket clip: a chrome strip riding the cap, ball foot at the bottom
-  penPart(bentPlate({ width: 0.034, rNear: 0.006, rFar: 0.016, thick: 0.01, curve: spline([[0, 0.035], [0.025, 0.064], [0.1, 0.064], [0.38, 0.058], [0.43, 0.054]]), maxEdge: 0.02 }), chrome, 1.42)
+  penPart(bentPlate({ width: 0.034, rNear: 0.006, rFar: 0.016, thick: 0.01, curve: spline([[0, 0.035], [0.025, 0.064], [0.1, 0.064], [0.38, 0.058], [0.43, 0.054]]) }), chrome, 1.42)
   const foot = penPart(new THREE.SphereGeometry(0.016, 24, 16), chrome)
   foot.scale.set(1, 1.3, 0.75)
   foot.position.set(0, 0.995, 0.06)
@@ -625,14 +669,17 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
       const [white, bone] = await Promise.all([svgImage(monogramSvg, '#ffffff'), svgImage(monogramSvg, '#ece9e2')])
       if (disposed) return
       // jaw: bump + a touch of grime in the recess, drawn into the jaw's planar UVs
-      const bb = jawGeo.boundingBox
-      const spanX = bb.max.x - bb.min.x, spanY = bb.max.y - bb.min.y
-      const W = 1024, H = Math.round((1024 * spanY) / spanX)
-      const mh = 0.3 * (W / spanX), mw = (mh * 161) / 293
-      const cx = W / 2, cy = ((bb.max.y + 0.285) / spanY) * H
+      // canvas x = across the jaw, canvas y = distance along it from the hinge
+      const len = jawCurve.getLength()
+      const W = 1024, H = Math.round((1024 * len) / JAW_W)
+      const mh = 0.3 * (W / JAW_W), mw = (mh * 161) / 293
+      // the flat face of the jaw, where u (down the board) is 0.285
+      const lens = jawCurve.getLengths(200)
+      let k = 0
+      while (k < 200 && jawCurve.getPoint(k / 200).x < 0.285) k++
+      const cx = W / 2, cy = (lens[k] / len) * H
       const b = makeCanvas(W, H), bg = b.getContext('2d')
       bg.fillStyle = 'rgb(128,128,128)'; bg.fillRect(0, 0, W, H)
-      bg.globalAlpha = 0.07; bg.drawImage(metal.b, 0, 0, W, H)
       bg.filter = 'blur(2.2px)'; bg.globalAlpha = 0.95
       bg.drawImage(white, cx - mw / 2, cy - mh / 2, mw, mh)
       const r = makeCanvas(W, H), rg = r.getContext('2d')
@@ -645,7 +692,7 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
       dg.filter = 'blur(5px)'; dg.drawImage(white, cx - mw / 2, cy - mh / 2, mw, mh)
       dg.filter = 'none'; dg.globalCompositeOperation = 'source-in'; dg.fillStyle = '#7d7a76'; dg.fillRect(0, 0, W, H)
       cg.globalAlpha = 0.55; cg.drawImage(dark, 0, 0)
-      jawMat.bumpMap = tex(b); jawMat.bumpScale = 3.2
+      jawMat.bumpMap = tex(b); jawMat.bumpScale = 1.6 // just the monogram: streaks here turn to sawtooth on the bend
       jawMat.roughnessMap = tex(r)
       jawMat.map = tex(c, true)
       for (const t of [jawMat.bumpMap, jawMat.roughnessMap, jawMat.map]) t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping
@@ -757,9 +804,15 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
   // ---------- posing the pen and stamp ----------
   const up = new THREE.Vector3(0, 1, 0)
   const WRITE_DIR = new THREE.Vector3(0.5, -0.5, 0.9).normalize()
-  const REST_DIR = new THREE.Vector3(0.14, 1, 0).normalize()
   const AWAY = new THREE.Vector3(BW / 2 + 2.2, -BH / 2 - 0.6, 2.4)
-  const REST = new THREE.Vector3(BW / 2 + 0.36, -1.05, TABLE_Z + 0.047)
+  // How the board lies and where the pen ends up. Desktop: turned on the table, pen beside it.
+  // Phones: squarer to the camera and seen more from above so the board fills the tall space,
+  // and the pen is dropped across the foot of the sheet instead of widening the shot.
+  const LAYOUTS = {
+    wide: { yaw: 0.34, el: 0.98, rest: new THREE.Vector3(BW / 2 + 0.36, -1.05, TABLE_Z + 0.047), restDir: new THREE.Vector3(0.14, 1, 0).normalize() },
+    narrow: { yaw: 0.14, el: 1.12, rest: new THREE.Vector3(-0.72, -1.27, SURFACE + 0.047), restDir: new THREE.Vector3(1, 0.1, 0).normalize() },
+  }
+  let L = LAYOUTS.wide
   const qWrite = new THREE.Quaternion(), qRest = new THREE.Quaternion()
   const qSpinW = new THREE.Quaternion().setFromAxisAngle(up, -2.2)
   const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3()
@@ -782,7 +835,7 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
     } else if (T > last) {
       const k = smoothstep(Math.min(1, (T - last) / (R1 - last)))
       sigPoint(SIGNATURE.length - 1, 1, _a)
-      pos.lerpVectors(_a, REST, k)
+      pos.lerpVectors(_a, L.rest, k)
       lift = 0.5 * Math.sin(k * Math.PI)
       rest = k
     } else {
@@ -811,7 +864,7 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
     _d.y += lift * 0.4
     _d.normalize()
     qWrite.setFromUnitVectors(up, _d).multiply(qSpinW)
-    qRest.setFromUnitVectors(up, REST_DIR)
+    qRest.setFromUnitVectors(up, L.restDir)
     pen.quaternion.slerpQuaternions(qWrite, qRest, rest)
   }
   function poseStamp() {
@@ -826,25 +879,23 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
 
   // ---------- camera ----------
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 }
-  const CAM = { az: 0, el: 0.98, dist: 10 }
+  const CAM = { az: 0, dist: 10 }
   const target = new THREE.Vector3()
   function placeCamera() {
     const az = CAM.az + pointer.x * 0.14
-    const el = CAM.el - pointer.y * 0.07
+    const el = L.el - pointer.y * 0.07
     camera.position.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).multiplyScalar(CAM.dist).add(target)
     camera.lookAt(target)
   }
 
-  // Fit the lying board (and the pen resting beside it) into the free space: right half on
-  // desktop, between the headline and the copy on phones.
+  // Fit the lying board (and, on desktop, the pen resting beside it) into the free space:
+  // right half on desktop, between the headline and the copy on phones.
   const _v = new THREE.Vector3()
   function fitPoints() {
-    const pts = [
-      [-BW / 2, -BH / 2, FRONT], [BW / 2, -BH / 2, FRONT], [-BW / 2, BH / 2, FRONT + 0.2], [BW / 2, BH / 2, FRONT + 0.2],
-      [REST.x + 0.1, REST.y, REST.z], [REST.x, REST.y + 1.47, REST.z],
-    ]
+    const pts = [[-BW / 2, -BH / 2, FRONT], [BW / 2, -BH / 2, FRONT], [-BW / 2, BH / 2, FRONT + 0.2], [BW / 2, BH / 2, FRONT + 0.2]]
+    if (L === LAYOUTS.wide) pts.push([L.rest.x + 0.1, L.rest.y, L.rest.z], [L.rest.x, L.rest.y + 1.47, L.rest.z])
     const saveR = place.rotation.y, saveP = place.position.clone()
-    place.rotation.y = YAW
+    place.rotation.y = L.yaw
     place.position.set(0, 0, 0)
     place.updateMatrixWorld(true)
     const out = pts.map((p) => board.localToWorld(new THREE.Vector3(...p)))
@@ -859,10 +910,11 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
     renderer.setSize(w, h, false)
     camera.aspect = w / h
     const f = frame()
+    L = f.narrow ? LAYOUTS.narrow : LAYOUTS.wide
     let bw, bh, cx, cy
     if (f.narrow) {
       bh = Math.max(160, f.bottom - f.top)
-      bw = w * 0.94
+      bw = w * 0.96
       cx = w / 2
       cy = (f.top + f.bottom) / 2
     } else {
@@ -941,7 +993,7 @@ export function createSignHereScene({ canvas, pin, frame, monogramSvg, lite }) {
     }
     if (!dirty) return
     dirty = false
-    place.rotation.y = THREE.MathUtils.lerp(YAW + 0.5, YAW, S.settle)
+    place.rotation.y = THREE.MathUtils.lerp(L.yaw + 0.5, L.yaw, S.settle)
     place.position.set(THREE.MathUtils.lerp(1.4, 0, S.settle), 0, THREE.MathUtils.lerp(-1.2, 0, S.settle))
     posePen()
     poseStamp()
