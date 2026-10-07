@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar'
 import Hero from '../components/Hero'
 import Campaign from '../components/Campaign'
 import LatestDrop from '../components/LatestDrop'
-import PoolRack from '../components/PoolRack'
+import SignHere from '../components/SignHere'
 import CategoryTiles from '../components/CategoryTiles'
 import Footer from '../components/Footer'
 import { useSmoothScroll } from '../hooks/useSmoothScroll'
@@ -20,7 +20,7 @@ function Home() {
         <Hero dockTargetRef={navLogoRef} />
         <Campaign />
         <LatestDrop />
-        <PoolRack />
+        <SignHere />
         <section aria-labelledby="categories-title" className="pt-[clamp(96px,10vw,150px)]">
           <h2 id="categories-title" className="px-4 pb-[22px] text-[15px] font-semibold md:px-[clamp(16px,2.2vw,32px)]">Shop by category</h2>
           <CategoryTiles />
