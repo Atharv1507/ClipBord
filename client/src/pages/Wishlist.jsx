@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import ProductGrid from '../components/ProductGrid'
 import { Icon } from '../components/Icons'
 import { panelClass, pillButton } from '../components/ProductResults'
-import { axiosInstance } from '../axiosCalls/axios'
-import { getErrorMessage } from '../utils/getErrorMessage'
+import { fetchWishlist } from '../store/wishlistSlice'
 import { useSmoothScroll } from '../hooks/useSmoothScroll'
 import { plural } from '../utils/product'
 
@@ -16,10 +16,11 @@ const gutter = 'px-4 md:px-[clamp(16px,2.2vw,32px)]'
 // the grid until the page is opened again, so the grid doesn't jump under the cursor and
 // a mis-tap can be undone.
 function Wishlist() {
-  const [products, setProducts] = useState([])
-  const [status, setStatus] = useState('loading') // 'loading' | 'ready' | 'error'
-  const [error, setError] = useState('')
-  const [attempt, setAttempt] = useState(0)
+  const dispatch = useDispatch()
+  const page = useSelector((state) => state.wishlist.page)
+  const ids = useSelector((state) => state.wishlist.ids)
+  // When this visit began. Only an answer from after it counts as this visit's list.
+  const [openedAt] = useState(() => Date.now())
   useSmoothScroll()
 
   useEffect(() => {
@@ -30,26 +31,20 @@ function Wishlist() {
   }, [])
 
   useEffect(() => {
-    let ignore = false
-    axiosInstance
-      .get('/wishlist/getWishlist')
-      .then((res) => {
-        if (ignore) return
-        setProducts(res.data.products)
-        setStatus('ready')
-      })
-      .catch((err) => {
-        if (ignore) return
-        console.log(err)
-        setError(getErrorMessage(err, "Couldn't load your bookmarks. Please try again."))
-        setStatus('error')
-      })
-    return () => {
-      ignore = true
-    }
-  }, [attempt])
+    dispatch(fetchWishlist())
+  }, [dispatch])
 
-  const isEmpty = status === 'ready' && products.length === 0
+  // This visit's answer has arrived (not one left over from an earlier visit).
+  const answered = page.fetchedAt >= openedAt && page.status !== 'loading'
+  // Until it does, the list from the last visit stands in, minus anything un-bookmarked
+  // since. Un-bookmarking during this visit doesn't touch page.products, so those stay.
+  const products = answered ? page.products : page.products.filter((p) => ids.includes(p._id))
+  let status = 'loading'
+  if (answered) status = page.status
+  else if (products.length) status = 'ready'
+  const error = page.error
+
+  const isEmpty = answered && status === 'ready' && products.length === 0
 
   return (
     <div id="top" className="flex min-h-screen flex-col">
@@ -77,7 +72,7 @@ function Wishlist() {
           {status === 'error' && (
             <div role="alert" className={panelClass}>
               <p>{error}</p>
-              <button type="button" onClick={() => { setStatus('loading'); setAttempt((n) => n + 1) }} className={pillButton}>Try again</button>
+              <button type="button" onClick={() => dispatch(fetchWishlist())} className={pillButton}>Try again</button>
             </div>
           )}
 

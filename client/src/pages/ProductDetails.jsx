@@ -1,13 +1,13 @@
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import ProductView from '../components/ProductView'
 import ProductGrid from '../components/ProductGrid'
 import { pillButton } from '../components/ProductResults'
-import { axiosInstance } from '../axiosCalls/axios'
-import { getErrorMessage } from '../utils/getErrorMessage'
 import { useProducts } from '../hooks/useProducts'
+import { fetchProduct } from '../store/productsSlice'
 import { useSmoothScroll } from '../hooks/useSmoothScroll'
 import { CATEGORY_LABELS, categoryPath } from '../utils/product'
 
@@ -36,10 +36,13 @@ function MoreLikeThis({ product }) {
 
 function ProductDetails() {
   const { id } = useParams()
-  const [product, setProduct] = useState(null)
-  const [status, setStatus] = useState('loading') // 'loading' | 'error' | 'ready'
-  const [error, setError] = useState('')
-  const [attempt, setAttempt] = useState(0)
+  const dispatch = useDispatch()
+  // This product's entry in the store: { status, error, product }, or nothing before the
+  // first request. Each id has its own entry, so an old product never shows under a new id.
+  const entry = useSelector((state) => state.products.details[id])
+  const current = entry?.product ?? null
+  const status = entry?.status === 'error' ? 'error' : current ? 'ready' : 'loading'
+  const error = entry?.error ?? ''
   useSmoothScroll()
 
   // Coming from partway down another page would otherwise open this one mid-way down.
@@ -47,37 +50,19 @@ function ProductDetails() {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [id])
 
+  // fetchProduct skips the request if this product was loaded recently.
   useEffect(() => {
-    let ignore = false
-    axiosInstance
-      .get(`/products/getproduct/${id}`)
-      .then((res) => {
-        if (ignore) return
-        setProduct(res.data.prod)
-        setStatus('ready')
-      })
-      .catch((err) => {
-        if (ignore) return
-        console.log(err)
-        setError(getErrorMessage(err, "Couldn't load this product. Check your connection and try again."))
-        setStatus('error')
-      })
-    return () => {
-      ignore = true
-    }
-  }, [id, attempt])
+    dispatch(fetchProduct(id))
+  }, [dispatch, id])
 
   useEffect(() => {
-    if (!product) return
-    document.title = `${product.name} · Clipbord`
+    if (!current) return
+    document.title = `${current.name} · Clipbord`
     return () => {
       document.title = 'Clipbord'
     }
-  }, [product])
+  }, [current])
 
-  // Back/forward between two product pages reuses this page, so hold off showing
-  // the old product under the new id.
-  const current = product?._id === id ? product : null
   const label = current ? CATEGORY_LABELS[current.category] ?? current.category : null
 
   return (
@@ -102,7 +87,7 @@ function ProductDetails() {
               <p className="display text-[clamp(36px,5vw,56px)]">This piece didn't load.</p>
               <p className="mt-3 text-panel-soft">{error}</p>
               <div className="flex flex-wrap gap-3">
-                <button type="button" onClick={() => { setStatus('loading'); setAttempt((n) => n + 1) }} className={pillButton}>Try again</button>
+                <button type="button" onClick={() => dispatch(fetchProduct(id))} className={pillButton}>Try again</button>
                 <Link to="/home#new" className="mt-6 inline-flex h-12 items-center px-2 text-sm underline underline-offset-4">Back to the drop</Link>
               </div>
             </div>
