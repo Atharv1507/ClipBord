@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Product } from "../models/product.model.js";
+import { serverError } from "../utils/serverError.js";
 
 // Allowed values come straight from the schema, so the controller never
 // drifts out of sync with the model if an enum value is added later.
@@ -64,12 +65,16 @@ export const getAllProducts = async (req, res) => {
     //    contains the text, ignoring case, so "jog" finds "Joggers".
     //    ?search=a&search=b arrives as an array, so only a string is used.
     //    No search means an empty filter, which lists everything.
+    //    Capped at 120 characters (the longest a product name can be) and
+    //    escaped, so "(" or "." are plain characters and a crafted pattern
+    //    can't make the database do heavy regex work.
     let search = "";
     if (typeof req.query.search === "string") {
-      search = req.query.search.trim();
+      search = req.query.search.trim().slice(0, 120);
     }
+    const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const searchFilter = search
-      ? { name: { $regex: search, $options: "i" } }
+      ? { name: { $regex: escaped, $options: "i" } }
       : {};
 
     // 4. Optional category filter (?category=Tshirt,Sweat Shirt). Category
@@ -199,6 +204,6 @@ export const getProductById = async (req,res)=>{
     return res.status(200).json({message:"Product Found", prod})
   }
   catch(err){
-    return res.status(500).json({message:"Internal server error", err})
+    return serverError(res, err)
   }
 }

@@ -3,12 +3,17 @@ import mongoose from "mongoose";
 const customerSchema=new mongoose.Schema({
     fullName:{
         type:String,
-        required:true
+        required:true,
+        trim:true,
+        maxlength:80
     },
     email:{
         type:String,
         required:true,
-        unique:true
+        unique:true,
+        trim:true,
+        lowercase:true,
+        maxlength:254
     },
     password:{
         type:String,

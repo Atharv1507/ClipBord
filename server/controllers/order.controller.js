@@ -3,6 +3,7 @@ import { Cart } from "../models/cart.model.js";
 import { Order } from "../models/order.model.js";
 import razorpay from "../utils/razorpay.js";
 import { markOrderPaid } from "../utils/markOrderPaid.js";
+import { serverError } from "../utils/serverError.js";
 
 // Razorpay signs `order_id|payment_id` with our key secret. Only someone with
 // the secret (Razorpay or us) can produce this, so a match proves the payment
@@ -114,9 +115,7 @@ export const checkout = async (req, res) => {
       await Order.deleteOne({ _id: order._id }).catch(() => {});
     }
 
-    // The Razorpay SDK puts its reason in err.error.description.
-    const message = err.error?.description || err.message;
-    return res.status(500).json({ message });
+    return serverError(res, err);
   }
 };
 
@@ -195,8 +194,7 @@ export const verifyPayment = async (req, res) => {
 
     return res.status(200).json({ message: "Payment verified", orderId: order._id });
   } catch (err) {
-    const message = err.error?.description || err.message;
-    return res.status(500).json({ message });
+    return serverError(res, err);
   }
 };
 
@@ -216,7 +214,7 @@ export const getMyOrders = async (req, res) => {
 
     return res.status(200).json({ orders });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };
 
@@ -231,6 +229,6 @@ export const getLastAddress = async (req, res) => {
 
     return res.status(200).json({ address: order?.shippingAddress ?? null });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };

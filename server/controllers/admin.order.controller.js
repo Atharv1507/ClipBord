@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Order } from "../models/order.model.js";
 import { Product } from "../models/product.model.js";
+import { serverError } from "../utils/serverError.js";
 import { issueRefund } from "../utils/markOrderPaid.js";
 import razorpay from "../utils/razorpay.js";
 
@@ -89,7 +90,7 @@ export const listOrders = async (req, res) => {
       total,
     });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };
 
@@ -104,7 +105,7 @@ export const getOrder = async (req, res) => {
     }
     return res.status(200).json({ order: toListItem(order) });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };
 
@@ -155,7 +156,7 @@ export const updateOrderStatus = async (req, res) => {
     }
     return res.status(200).json({ order: toListItem(order) });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };
 
@@ -198,7 +199,7 @@ export const cancelOrder = async (req, res) => {
     });
   } catch (err) {
     await session.endSession();
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
   await session.endSession();
 
@@ -296,7 +297,7 @@ export const markReturned = async (req, res) => {
   } catch (err) {
     await session.endSession();
     if (err instanceof ReturnError) return res.status(err.status).json({ message: err.message });
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
   await session.endSession();
 
@@ -459,6 +460,6 @@ export const getStats = async (req, res) => {
       recent: recent.map(toListItem),
     });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Wishlist } from "../models/wishlist.model.js";
 import { Product } from "../models/product.model.js";
+import { serverError } from "../utils/serverError.js";
 
 
 export const getWishlistIds = async (req, res) => {
@@ -8,7 +9,7 @@ export const getWishlistIds = async (req, res) => {
     const wishlist = await Wishlist.findOne({ customer: req.customer._id });
     return res.status(200).json({ ids: wishlist ? wishlist.products : [] });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };
 
@@ -37,7 +38,7 @@ export const addToWishlist = async (req, res) => {
 
     return res.status(200).json({ message: "Added to wishlist", ids: wishlist.products });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };
 
@@ -57,7 +58,7 @@ export const removeFromWishlist = async (req, res) => {
 
     return res.status(200).json({ message: "Removed from wishlist", ids: wishlist ? wishlist.products : [] });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };
 
@@ -83,6 +84,6 @@ export const getWishlist = async (req, res) => {
 
     return res.status(200).json({ products });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };

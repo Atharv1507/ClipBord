@@ -1,14 +1,18 @@
+import mongoose from "mongoose";
 import { Cart } from "../models/cart.model.js";
 import { Product } from "../models/product.model.js";
+import { serverError } from "../utils/serverError.js";
 
 const sizes = Cart.schema.path("items").schema.path("size").enumValues;
 
 export const addToCart = async (req, res) => {
   try {
     const { productId, size } = req.body;
-    const quantity = Number(req.body.quantity) || 1;
+    // Whole units only: 1.5 of a shirt would mean half-sold stock and a
+    // fractional order amount.
+    const quantity = req.body.quantity === undefined ? 1 : Number(req.body.quantity);
 
-    if (!productId || !sizes.includes(size) || quantity < 1) {
+    if (!mongoose.isValidObjectId(productId) || !sizes.includes(size) || !Number.isInteger(quantity) || quantity < 1) {
       return res
         .status(400)
         .json({ message: "Invalid product, size or quantity" });
@@ -50,7 +54,7 @@ export const addToCart = async (req, res) => {
   } 
   catch (err) 
     {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };
 export const removeFromCart= async(req,res)=>{
@@ -87,7 +91,7 @@ export const removeFromCart= async(req,res)=>{
     }
     catch (err) 
     {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 }
 
@@ -112,7 +116,7 @@ export const removeItem = async (req, res) => {
     const count = cart.items.reduce((sum, item) => sum + item.quantity, 0);
     return res.status(200).json({ message: "Removed from cart", cart: { items: cart.items, count } });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };
 
@@ -158,6 +162,6 @@ export const getCart = async (req, res) => {
 
     return res.status(200).json({ cart: { items, count, subtotal } });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 };

@@ -24,7 +24,8 @@ const orderItemSchema=new mongoose.Schema({
     quantity:{
         type:Number,
         required:true,
-        min:1
+        min:1,
+        validate:[Number.isInteger,'Quantity must be a whole number']
     },
     // Unit price in rupees, same unit as Product.price
     price:{
