@@ -67,8 +67,8 @@ export const getWishlist = async (req, res) => {
   try {
     const wishlist = await Wishlist.findOne({ customer: req.customer._id }).populate(
       "products",
-      // archived lets the page mark products that are no longer for sale
-      "name price image category archived"
+      // archived lets the page mark products that are no longer for sale; sizes feed the cards' quick add
+      "name price image category archived sizes"
     );
 
     if (!wishlist) {

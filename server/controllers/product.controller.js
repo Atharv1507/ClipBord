@@ -125,12 +125,12 @@ export const getAllProducts = async (req, res) => {
     //    at the same time, since none of them depends on another.
     //    Sorting by createdAt + _id keeps the order stable between requests,
     //    so no product repeats or goes missing across pages. The listing only
-    //    needs card fields (_id is included by default); full details come
-    //    from getProductById.
+    //    needs card fields, with sizes for the cards' quick add (_id is
+    //    included by default); full details come from getProductById.
     const [Allproducts, total, categoryGroups, priceGroups] =
       await Promise.all([
         Product.find(filter)
-          .select("name price image category")
+          .select("name price image category sizes")
           .sort({ createdAt: -1, _id: -1 })
           .skip(skip)
           .limit(limit),
